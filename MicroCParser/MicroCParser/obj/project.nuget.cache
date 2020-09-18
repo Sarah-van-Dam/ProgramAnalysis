@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "y+3ysBrfy4bpUGNrTqqyQBqOC9SbFPqhjLiBVWmanBTZv7clfDx/iqeIB++SV3YaOUDRqthhPb9T0868aKCtLg==",
+  "success": true,
+  "projectFilePath": "/Users/casperskjaerris/Documents/DTU/Kandidat/Semester 3/Program analysis/MicroC Parser/MicroCParser/MicroCParser/MicroCParser.fsproj",
+  "expectedPackageFiles": [
+    "/Users/casperskjaerris/.nuget/packages/fsharp.core/4.7.1/fsharp.core.4.7.1.nupkg.sha512",
+    "/Users/casperskjaerris/.nuget/packages/fslexyacc/10.0.0/fslexyacc.10.0.0.nupkg.sha512",
+    "/Users/casperskjaerris/.nuget/packages/fslexyacc.runtime/10.0.0/fslexyacc.runtime.10.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

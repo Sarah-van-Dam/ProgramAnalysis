@@ -1,0 +1,55 @@
+{
+module MicroCLexer
+open FSharp.Text.Lexing
+open System
+open MicroCParser
+}
+
+// Defining macros
+let digit       = ['0'-'9']
+let int = ['-' '+']? digit+
+let whitespace  = [' ' '\n' '\r' '\t']
+let char        = ['a'-'z' 'A'-'Z']
+let identifier    = char(char|digit)*
+
+// Defining the rules for building tokens
+rule tokenize = parse
+| whitespace    { tokenize lexbuf }
+| int			{ INT ( int (LexBuffer<_>.LexemeString lexbuf))}
+| "if"			{ IF }
+| "else"		{ ELSE }
+| "while" 		{ WHILE }
+| "read" 		{ READ }
+| "write"       { WRITE }
+| ";"           { SEMI }
+| ":="          { ASSIGN }
+| "["           { ARRAYDECLARESTART }
+| "]"           { ARRAYDECLAREEND }
+| "+"           { PLUS }
+| "-"           { MINUS }
+| "*"           { MULTIPLY }
+| "/"           { DIVIDE }
+| "%"           { MODULO }
+| "^"           { POWER }
+| "&"           { AND }
+| "|"           { OR }
+| "not"         { NOT }
+| "=="          { EQ }
+| "!="          { NEQ }
+| "<"           { L }
+| ">"           { G }
+| "<="          { LE }
+| ">="          { GE }
+| "("           { LPAR }
+| ")"           { RPAR }
+| "true"        { TRUE }
+| "false"       { FALSE }
+| "int"         { INTDECLARE }
+| ".fst"        { FST }
+| ".snd"        { SND }
+| ","           { COMMA }
+| "."           { DOT }
+| "{"           { CURLYSTART }
+| "}"           { CURLYEND }
+| identifier { VAR (LexBuffer<_>.LexemeString lexbuf) }
+| eof           { EOF }
