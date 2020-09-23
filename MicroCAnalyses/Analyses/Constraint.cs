@@ -1,7 +1,8 @@
 namespace Analyses
 {
-    public class Constraint
+    public abstract class Constraint
     {
+        public Node Node { get; }
         
     }
 }
