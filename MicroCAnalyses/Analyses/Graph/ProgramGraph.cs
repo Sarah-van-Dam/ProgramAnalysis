@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using Analyses;
 
-namespace Analyses
+namespace Analyses.Graph
 {
     public class ProgramGraph
     {

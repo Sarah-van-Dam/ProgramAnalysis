@@ -1,8 +1,8 @@
-
 using System;
 using System.Collections.Generic;
+using Action = Analyses.Analysis.Actions;
 
-namespace Analyses
+namespace Analyses.Analysis.BitVector
 {
     public abstract class BitVectorFramework : Analysis
     {

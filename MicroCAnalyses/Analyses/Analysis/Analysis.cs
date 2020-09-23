@@ -1,4 +1,6 @@
-namespace Analyses
+using Analyses.Graph;
+
+namespace Analyses.Analysis
 {
     public abstract class Analysis
     {
