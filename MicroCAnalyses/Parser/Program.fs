@@ -1,13 +1,9 @@
 ﻿module Program
 open FSharp.Text.Lexing
+open Parser
 
 [<EntryPoint>]
 let main argv =
-    let parse program = 
-        let lexbuf = LexBuffer<char>.FromString program
-        let res = MicroCParser.start MicroCLexer.tokenize lexbuf
-        res
-
     //a few parsing tests with simple and complex json
     //let program1 = "int f1; int f2; int input; int current; f1 := 0;f2 := 0; read input;"
     
