@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Analyses.Graph;
 using Action = Analyses.Analysis.Actions;
 
 namespace Analyses.Analysis.BitVector
@@ -8,11 +9,11 @@ namespace Analyses.Analysis.BitVector
     {
         protected Operator joinOperator;
         protected Direction direction;
-        protected HashSet<Constraint> constraints;
+        protected Dictionary<Node, IConstraints> finalConstraintsForNodes;
 
-        protected abstract Constraint kill(Constraint constraint, Action action);
+        protected abstract void kill(Edge edge);
 
-        protected abstract Constraint generate(Constraint constraint, Action action);
+        protected abstract void generate(Edge edge);
 
         public override void Analyse()
         {
@@ -21,6 +22,8 @@ namespace Analyses.Analysis.BitVector
 
         private void SolveConstraints()
         {
+            // Implement worklist algorithm here!
+            // For each edges, evaluate all nodes and update the finalConstraintsForNodes with the changes from the edge.
             throw new NotImplementedException();
         }
 
