@@ -7,13 +7,13 @@ namespace Analyses.Analysis.BitVector
 {
     public abstract class BitVectorFramework : Analysis
     {
-        protected Operator joinOperator;
-        protected Direction direction;
-        protected Dictionary<Node, IConstraints> finalConstraintsForNodes;
+        protected Operator JoinOperator;
+        protected Direction Direction;
+        protected Dictionary<Node, IConstraints> FinalConstraintsForNodes;
 
-        protected abstract void kill(Edge edge);
+        public abstract void Kill(Edge edge);
 
-        protected abstract void generate(Edge edge);
+        public abstract void Generate(Edge edge);
 
         public override void Analyse()
         {

@@ -36,7 +36,7 @@ namespace Analyses.Graph
                         break;
                     
                     case ArrayDeclaration arrayDeclaration:
-                        listOfVariables.Add(arrayDeclaration.VariableName);
+                        listOfVariables.Add(arrayDeclaration.ArrayName);
                         break;
                     
                     case RecordDeclaration recordDeclaration:

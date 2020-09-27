@@ -6,11 +6,11 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
     public class ReachingDefinitionConstraints : IConstraints
     {
         public readonly Dictionary<string, HashSet<(string action, string startNode, string endNode)>>
-            variableToPossibleAssignments;
+            VariableToPossibleAssignments;
 
         public ReachingDefinitionConstraints()
         {
-           variableToPossibleAssignments = new Dictionary<string, HashSet<(string action, string startNode, string endNode)>>();
+           VariableToPossibleAssignments = new Dictionary<string, HashSet<(string action, string startNode, string endNode)>>();
         }
         
 
