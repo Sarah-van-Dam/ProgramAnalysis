@@ -2,7 +2,8 @@ namespace Analyses.Analysis.Actions
 {
     public class RecordAssignment : Action
     {
-        public string LeftHandSide { get; set; }
-        public string RightHandSide { get; set; }
+        public string RecordName { get; set; }
+        public string FirstExpression { get; set; }
+        public string SecondExpression { get; set; }
     }
 }
