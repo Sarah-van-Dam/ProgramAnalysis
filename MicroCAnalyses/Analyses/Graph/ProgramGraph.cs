@@ -19,6 +19,14 @@ namespace Analyses.Graph
             VariableNames = GetVariables();
         }
 
+        /// <summary>
+        /// Constructor for unit tests
+        /// </summary>
+        /// <param name="variableNames"></param>
+        internal ProgramGraph(HashSet<string> variableNames)
+        {
+            VariableNames = variableNames;
+        }
         private void AstToProgramGraph(MicroCTypes.expr ast)
         {
             throw new System.NotImplementedException();
