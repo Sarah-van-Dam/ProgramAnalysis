@@ -113,9 +113,9 @@ namespace Analyses.Test.Analysis.BitVector
             yield return new object[] {"R", new Edge(null, new RecordDeclaration{VariableName = "R"}, null) };
         }
 
-        private ProgramGraph GenerateStandardProgramGraph(HashSet<string> variableNames)
+        private Graph.ProgramGraph GenerateStandardProgramGraph(HashSet<string> variableNames)
         {
-            return new ProgramGraph(variableNames);
+            return new Graph.ProgramGraph(variableNames);
         }
     }
 }
