@@ -17,4 +17,8 @@
       <ProjectReference Include="..\Analyses\Analyses.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Analysis\ProgramGraph\" />
+    </ItemGroup>
+
 </Project>
