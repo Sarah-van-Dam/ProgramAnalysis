@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <FsLexToolPath>FsLexYacc/fslex/netcoreapp3.0</FsLexToolPath>
-        <FsYaccToolPath>FsLexYacc/fsyacc/netcoreapp3.0</FsYaccToolPath>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
-        <OutputType>Exe</OutputType>
-    </PropertyGroup>
+	<PropertyGroup>
+		<FsLexToolPath Condition="'$(OS)' != 'Unix'">FsLexYacc/fslex/net46</FsLexToolPath>
+		<FsYaccToolPath Condition="'$(OS)' != 'Unix'">FsLexYacc/fsyacc/net46</FsYaccToolPath>
+		<FsLexToolPath Condition="'$(OS)' == 'Unix'">FsLexYacc/fslex/netcoreapp3.0</FsLexToolPath>
+		<FsYaccToolPath Condition="'$(OS)' == 'Unix'">FsLexYacc/fsyacc/netcoreapp3.0</FsYaccToolPath>
+		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<OutputType>Exe</OutputType>
+	</PropertyGroup>
 
 
 
