@@ -1,6 +1,7 @@
 using System;
+using Action = Analyses.Analysis.Actions;
 
-namespace Analyses
+namespace Analyses.Graph
 {
     public class Edge
     {
