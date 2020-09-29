@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Analyses.Graph;
 
 namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
 {
