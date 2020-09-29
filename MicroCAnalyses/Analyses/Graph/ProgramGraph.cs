@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Analyses;
 using Analyses.Analysis.Actions;
 
@@ -28,8 +29,17 @@ namespace Analyses.Graph
         {
             VariableNames = variableNames;
         }
+
+        public override string ToString()
+        {
+            return $"[\n\tNodes: (\n\t\t{string.Join(",\n\t\t", Nodes.Select(node => node.Name))}\n\t)," +
+                    $"\n\tEdges: (\n\t\t{string.Join(",\n\t\t", Edges.Select(edge => edge.ToString()))}\n\t)\n]";
+        }
+
         private void AstToProgramGraph(MicroCTypes.expr ast)
         {
+            Nodes = new HashSet<Node>();
+            Edges = new HashSet<Edge>();
             var start = new Node(StartNode);
             var end = new Node(EndNode);
             Nodes.Add(start);
