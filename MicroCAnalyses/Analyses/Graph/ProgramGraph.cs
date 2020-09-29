@@ -36,6 +36,15 @@ namespace Analyses.Graph
                     $"\n\tEdges: (\n\t\t{string.Join(",\n\t\t", Edges.Select(edge => edge.ToString()))}\n\t)\n]";
         }
 
+        /// <summary>
+        /// Generates a string in .gv file format, to use with Graphviz for showing the program graphs.
+        /// </summary>
+        /// <returns></returns>
+        public string ExportToGV(string graphConfig = "size=\"10\"\n\tnode [shape = circle];")
+        {
+            return $"digraph program_graph {{\n\t{graphConfig}\n\t{string.Join("\n\t", Edges.Select(edge => $"{edge.FromNode.Name} -> {edge.ToNode.Name} [ label = \"{edge.Action.ToString()}\" ];"))}\n}}";
+        }
+
         private void AstToProgramGraph(MicroCTypes.expr ast)
         {
             Nodes = new HashSet<Node>();
