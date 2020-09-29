@@ -4,6 +4,9 @@ namespace Analyses.Analysis.Actions
     {
         public string VariableName { get; set; }
         public string RightHandSide { get; set; }
+
+        public override string ToString()
+            => $"{VariableName} := {RightHandSide};";
     }
     
     

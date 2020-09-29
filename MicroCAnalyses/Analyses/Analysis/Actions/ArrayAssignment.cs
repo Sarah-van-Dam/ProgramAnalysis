@@ -5,5 +5,8 @@ namespace Analyses.Analysis.Actions
         public string ArrayName { get; set; }
         public string Index { get; set; }
         public string RightHandSide { get; set; }
+
+        public override string ToString()
+            => $"{ArrayName}[{Index}] := {RightHandSide};";
     }
 }
