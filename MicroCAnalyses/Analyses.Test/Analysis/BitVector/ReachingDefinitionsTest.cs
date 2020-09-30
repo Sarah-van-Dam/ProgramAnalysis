@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Analyses.Analysis.Actions;
@@ -129,19 +128,22 @@ namespace Analyses.Test.Analysis.BitVector
             const string fromNodeName = "q1";
             const string toNodeName = "q2";
             const string arrayName = "A";
+            const string declarationEdgeFromName = "q_start";
+            const string declarationEdgeToName = "q_0";
             var (fromNode, toNode) = InitializeAnalysis(fromNodeName, toNodeName, arrayName);
             var edge = new Edge(fromNode, new ArrayAssignment {ArrayName = arrayName, Index = "1",  RightHandSide = "2"},
                 toNode);
+            GivenArrayHasBeenDeclared(arrayName, declarationEdgeFromName, declarationEdgeToName);
             
             _analysis.Generate(edge);
-
-            var constraint = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments).Value;
-            var insertedTuple = constraint.Single();
-            Assert.Equal(fromNodeName, insertedTuple.startNode);
-            Assert.Equal(toNodeName, insertedTuple.endNode);
-            Assert.Equal(arrayName, insertedTuple.variable);
+            
+            var kvp = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments);
+            Assert.Equal(2, kvp.Value.Count);
+            var constraints = _analysis.Constraints.VariableToPossibleAssignments[arrayName];
+            Assert.Contains((arrayName, fromNodeName, toNodeName), constraints);
+            Assert.Contains((arrayName, declarationEdgeFromName, declarationEdgeToName), constraints);
         }
-        
+
         [Fact]
         public void TestGenerateOnRecordAssignmentsAddVariableNameAndNodesToTuple()
         {
@@ -278,17 +280,20 @@ namespace Analyses.Test.Analysis.BitVector
             const string fromNodeName = "q1";
             const string toNodeName = "q2";
             const string arrayName = "A";
+            const string declarationEdgeFromName = "q_start";
+            const string declarationEdgeToName = "q_0";
             var (fromNode, toNode) = InitializeAnalysis(fromNodeName, toNodeName, arrayName);
             var edge = new Edge(fromNode, new ArrayAssignment {ArrayName = arrayName, Index = "1",  RightHandSide = "2"},
                 toNode);
+            GivenArrayHasBeenDeclared(arrayName, declarationEdgeFromName, declarationEdgeToName);
             
             _analysis.Generate(edge);
 
-            var constraint = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments).Value;
-            var insertedTuple = constraint.Single();
-            Assert.Equal(fromNodeName, insertedTuple.startNode);
-            Assert.Equal(toNodeName, insertedTuple.endNode);
-            Assert.Equal(arrayName, insertedTuple.variable);
+            var kvp = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments);
+            Assert.Equal(2, kvp.Value.Count);
+            var constraints = _analysis.Constraints.VariableToPossibleAssignments[arrayName];
+            Assert.Contains((arrayName, fromNodeName, toNodeName), constraints);
+            Assert.Contains((arrayName, declarationEdgeFromName, declarationEdgeToName), constraints);
         }
 
         private (Node fromNode, Node toNode) InitializeAnalysis(string fromNodeName, string toNodeName, string variableName)
@@ -302,10 +307,19 @@ namespace Analyses.Test.Analysis.BitVector
         public static IEnumerable<object[]> EmptyKillSetActions()
         {
             yield return new object[] {"A", new Edge(null, new ArrayAssignment {ArrayName = "A", Index = "a",RightHandSide = "a+b"}, null)};
-            yield return new object[] {"A", new Edge(null, new ArrayDeclaration {ArrayName = "A", ArraySize = 1}, null)};
             yield return new object[] {"x", new Edge(null, new IntDeclaration {VariableName = "x"}, null)};
             yield return new object[] {"x", new Edge(null, new Write{VariableName = "x"}, null) };
             yield return new object[] {"R", new Edge(null, new RecordDeclaration{VariableName = "R"}, null) };
+        }
+        
+        private void GivenArrayHasBeenDeclared(string arrayName, string declarationStartNode, string declarationEndNode)
+        {
+            var fromNode = new Node(declarationStartNode);
+            var toNode = new Node(declarationEndNode);
+            var edge = new Edge(fromNode, new ArrayDeclaration {ArrayName = arrayName, ArraySize= 2},
+                toNode);
+            _analysis.Kill(edge);
+            _analysis.Generate(edge);
         }
 
         private ProgramGraph GenerateStandardProgramGraph(HashSet<string> variableNames)
