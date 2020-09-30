@@ -10,9 +10,8 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
     public class ReachingDefinitions : BitVectorFramework
     {
         private readonly ReachingDefinitionConstraints _constraints;
-        
-        internal ReachingDefinitionConstraints Constraints => _constraints;
 
+        internal override Constraints Constraints => _constraints;
         public ReachingDefinitions(ProgramGraph programGraph)
         {
             Direction = Direction.Forward;

@@ -9,7 +9,9 @@ namespace Analyses.Analysis.BitVector
     {
         protected Operator JoinOperator;
         protected Direction Direction;
-        protected Dictionary<Node, IConstraints> FinalConstraintsForNodes;
+        protected Dictionary<Node, Constraints> FinalConstraintsForNodes;
+        internal abstract Constraints Constraints { get; }
+
 
         public abstract void Kill(Edge edge);
 
