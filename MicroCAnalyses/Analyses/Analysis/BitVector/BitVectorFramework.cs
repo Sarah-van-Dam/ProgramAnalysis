@@ -57,12 +57,14 @@ namespace Analyses.Analysis.BitVector
             var programGraph = this._program; //DEBUG 
             var previousRd = "";
 
-            foreach (Edge outgoingEdge in programGraph.Edges)
+            foreach (Edge currentEdge in programGraph.Edges)
             {
                 Console.WriteLine(
-                    $"Traversing edge {outgoingEdge.Action} " +
-                    $"from node {outgoingEdge.FromNode.Name} " +
-                    $"to node {outgoingEdge.ToNode.Name}");
+                    $"Traversing edge {currentEdge.Action} " +
+                    $"from node {currentEdge.FromNode.Name} " +
+                    $"to node {currentEdge.ToNode.Name}");
+
+
 
 
             }
@@ -73,47 +75,36 @@ namespace Analyses.Analysis.BitVector
         /// For each edge, evaluate all nodes and update the finalConstraintsForNodes 
         /// with the changes from the edge.
         /// </summary>
-        private void SolveConstraints1()
+        private void SolveConstraintsRoundRobin()
         {
             var programGraph = this._program; //DEBUG 
 
             bool extraRoundNeeded = true;
             int step = 0;
-            Dictionary<Node, Constraints> result = new Dictionary<Node, Constraints>();
             Edge traversedEdge = null;
-            //Node selectedNode = programGraph.Nodes.Single(n => n.Name == "q_start"); - doenst work
+            //Node selectedNode = programGraph.Nodes.First(); - not supported by hashsets
             Node selectedNode = null;
 
-            Dictionary<Node, Constraints> iterationResult = new Dictionary<Node, Constraints>();
-
+            Dictionary<Node, HashSet<(string, string, string)>> result =
+                new Dictionary<Node, HashSet<(string, string, string)>>();
+            Dictionary<Node, HashSet<(string, string, string)>> iterationResult = 
+                new Dictionary<Node, HashSet<(string, string, string)>>();
 
             while (extraRoundNeeded)
-            {               
+            {
                 foreach (Edge outgoingEdge in programGraph.Edges)
                 {
-                    Console.WriteLine($"Traversing edge {outgoingEdge.Action} from node {outgoingEdge.FromNode.Name} to node {outgoingEdge.ToNode.Name}");
                     traversedEdge = outgoingEdge;
                     selectedNode = traversedEdge.ToNode;
                     this.Kill(traversedEdge);
                     this.Generate(traversedEdge);
 
+                    var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];                
+                    iterationResult.Add(selectedNode, constraintsForNode);
 
-                    //var constraints = Constraints.VariableToPossibleAssignments[traversedEdge.Action.ToString()];
-                    //var resultConstraints = this.ApplyOperator(constraints);
-
-
-                    //foreach ((string action, string startNode, string endNode) constraint in constraints)
-                    //{
-                        //build constraint 
-
-
-
-                        //add it to iteration result
-                        //iterationResult.Add(selectedNode, );
-                    //}
 
                     step++;
-                    
+
                 }
                 if (iterationResult != result)
                 {
@@ -124,7 +115,6 @@ namespace Analyses.Analysis.BitVector
                     extraRoundNeeded = false;
                 }
             }
-        }
 
     }
 }
