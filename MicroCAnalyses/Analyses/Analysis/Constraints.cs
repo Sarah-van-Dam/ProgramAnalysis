@@ -5,7 +5,7 @@ namespace Analyses
 {
     public abstract class Constraints
     {
-        public readonly Dictionary<string, HashSet<Constraints>>
+        public readonly Dictionary<string, HashSet<(string action, string startNode, string endNode)>>
     VariableToPossibleAssignments;
 
     }
