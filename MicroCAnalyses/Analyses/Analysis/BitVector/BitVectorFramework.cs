@@ -28,6 +28,9 @@ namespace Analyses.Analysis.BitVector
         }
 
 
+        //todo: generate constraints : go through program tree and based on edges do that
+
+
 
         private void ApplyOperator(
             HashSet<(string action, string startNode, string endNode)> constraint)
@@ -54,6 +57,8 @@ namespace Analyses.Analysis.BitVector
 
         private void SolveConstraints()
         {
+            //
+
             var programGraph = this._program; //DEBUG 
             var previousRd = "";
 
@@ -64,7 +69,8 @@ namespace Analyses.Analysis.BitVector
                     $"from node {currentEdge.FromNode.Name} " +
                     $"to node {currentEdge.ToNode.Name}");
 
-
+                this.Kill(currentEdge);
+                this.Generate(currentEdge);
 
 
             }
@@ -87,7 +93,7 @@ namespace Analyses.Analysis.BitVector
 
             Dictionary<Node, HashSet<(string, string, string)>> result =
                 new Dictionary<Node, HashSet<(string, string, string)>>();
-            Dictionary<Node, HashSet<(string, string, string)>> iterationResult = 
+            Dictionary<Node, HashSet<(string, string, string)>> iterationResult =
                 new Dictionary<Node, HashSet<(string, string, string)>>();
 
             while (extraRoundNeeded)
@@ -99,7 +105,7 @@ namespace Analyses.Analysis.BitVector
                     this.Kill(traversedEdge);
                     this.Generate(traversedEdge);
 
-                    var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];                
+                    var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];
                     iterationResult.Add(selectedNode, constraintsForNode);
 
 
@@ -115,6 +121,7 @@ namespace Analyses.Analysis.BitVector
                     extraRoundNeeded = false;
                 }
             }
+        }
 
     }
 }
