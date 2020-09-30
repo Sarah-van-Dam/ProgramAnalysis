@@ -19,16 +19,18 @@ namespace Analyses.Analysis.BitVector
 
         public override void Analyse()
         {
-            this.SolveConstraints();
+            this.ConstructConstraints();
+            this.SolveConstraintsRoundRobin();
         }
 
-        private void BuildConstraintForEdge(Edge edge)
+        private void ConstructConstraints()
         {
+            //todo: generate constraints : go through program tree and based on edges do that
+
 
         }
 
 
-        //todo: generate constraints : go through program tree and based on edges do that
 
 
 
@@ -105,8 +107,8 @@ namespace Analyses.Analysis.BitVector
                     this.Kill(traversedEdge);
                     this.Generate(traversedEdge);
 
-                    var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];
-                    iterationResult.Add(selectedNode, constraintsForNode);
+                    //var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];
+                    //iterationResult.Add(selectedNode, constraintsForNode);
 
 
                     step++;
