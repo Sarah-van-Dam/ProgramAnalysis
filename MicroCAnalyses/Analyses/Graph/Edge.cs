@@ -15,5 +15,11 @@ namespace Analyses.Graph
             ToNode = toNode;
             Action = action;
         }
+
+        public override string ToString()
+        {
+            return $"Edge with action type {this.Action.ToString()} from {FromNode} to {ToNode}";
+        }
+
     }
 }

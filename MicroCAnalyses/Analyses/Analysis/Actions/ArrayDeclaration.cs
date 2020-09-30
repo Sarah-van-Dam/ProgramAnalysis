@@ -4,5 +4,10 @@ namespace Analyses.Analysis.Actions
     {
         public string ArrayName { get; set; }
         public int ArraySize { get; set; }
+
+        public override string ToString()
+        {
+            return $"ArrayDeclation with name: {ArrayName} and size {ArraySize}";
+        }
     }
 }
