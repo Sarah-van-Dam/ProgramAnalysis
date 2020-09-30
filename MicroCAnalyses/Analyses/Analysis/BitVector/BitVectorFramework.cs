@@ -19,7 +19,53 @@ namespace Analyses.Analysis.BitVector
 
         public override void Analyse()
         {
-            return this.SolveConstraints();
+            this.SolveConstraints();
+        }
+
+        private void BuildConstraintForEdge(Edge edge)
+        {
+
+        }
+
+
+
+        private void ApplyOperator(
+            HashSet<(string action, string startNode, string endNode)> constraint)
+        {
+            //extract left and right constraint
+            (string action, string startNode, string endNode) leftConstraint = ("", "", "");
+            (string action, string startNode, string endNode) rightConstraint = ("", "", "");
+
+
+            if (this.JoinOperator == Operator.Union)
+            {
+                //leftConstraint.UnionWith(rightConstraint);
+            }
+            else if (this.JoinOperator == Operator.Intersection)
+            {
+                //leftConstraint.IntersectWith(rightConstraint);
+            }
+            else
+            {
+                throw new SystemException("Illegal constraint operator");
+            }
+            //return leftConstraint;
+        }
+
+        private void SolveConstraints()
+        {
+            var programGraph = this._program; //DEBUG 
+            var previousRd = "";
+
+            foreach (Edge outgoingEdge in programGraph.Edges)
+            {
+                Console.WriteLine(
+                    $"Traversing edge {outgoingEdge.Action} " +
+                    $"from node {outgoingEdge.FromNode.Name} " +
+                    $"to node {outgoingEdge.ToNode.Name}");
+
+
+            }
         }
 
         /// <summary>
@@ -27,7 +73,7 @@ namespace Analyses.Analysis.BitVector
         /// For each edge, evaluate all nodes and update the finalConstraintsForNodes 
         /// with the changes from the edge.
         /// </summary>
-        private void SolveConstraints()
+        private void SolveConstraints1()
         {
             var programGraph = this._program; //DEBUG 
 
@@ -35,28 +81,36 @@ namespace Analyses.Analysis.BitVector
             int step = 0;
             Dictionary<Node, Constraints> result = new Dictionary<Node, Constraints>();
             Edge traversedEdge = null;
-            //Node selectedNode = programGraph.Nodes.First(); - not supported by hashsets
+            //Node selectedNode = programGraph.Nodes.Single(n => n.Name == "q_start"); - doenst work
             Node selectedNode = null;
 
             Dictionary<Node, Constraints> iterationResult = new Dictionary<Node, Constraints>();
+
 
             while (extraRoundNeeded)
             {               
                 foreach (Edge outgoingEdge in programGraph.Edges)
                 {
-
+                    Console.WriteLine($"Traversing edge {outgoingEdge.Action} from node {outgoingEdge.FromNode.Name} to node {outgoingEdge.ToNode.Name}");
                     traversedEdge = outgoingEdge;
                     selectedNode = traversedEdge.ToNode;
                     this.Kill(traversedEdge);
                     this.Generate(traversedEdge);
-                    var constraints = Constraints.VariableToPossibleAssignments[traversedEdge.Action.ToString()];
-                    foreach (HashSet<(string action, string startNode, string endNode)> constraint in constraints)
-                    {
+
+
+                    //var constraints = Constraints.VariableToPossibleAssignments[traversedEdge.Action.ToString()];
+                    //var resultConstraints = this.ApplyOperator(constraints);
+
+
+                    //foreach ((string action, string startNode, string endNode) constraint in constraints)
+                    //{
                         //build constraint 
 
 
-                        iterationResult.Add(selectedNode, Constraints.VariableToPossibleAssignments[traversedEdge.Action.ToString()]);
-                    }
+
+                        //add it to iteration result
+                        //iterationResult.Add(selectedNode, );
+                    //}
 
                     step++;
                     
