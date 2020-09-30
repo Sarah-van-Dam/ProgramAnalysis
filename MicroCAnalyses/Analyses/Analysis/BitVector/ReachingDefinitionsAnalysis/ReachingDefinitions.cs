@@ -26,7 +26,7 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
             foreach (var variableName in _program.VariableNames)
             {
                 _constraints.VariableToPossibleAssignments[variableName] = 
-                    new HashSet<(string action, string startNode, string endNode)>
+                    new HashSet<(string variable, string startNode, string endNode)>
                     {
                         (variableName, "?", ProgramGraph.StartNode)
                     };
@@ -49,30 +49,30 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     break;
                 case IntAssignment intAssignment:
                     _constraints.VariableToPossibleAssignments[intAssignment.VariableName] = 
-                        new HashSet<(string action, string startNode, string endNode)>();
+                        new HashSet<(string variable, string startNode, string endNode)>();
                     break;
                 case ArrayAssignment arrayAssignment:
                     // An array assignment cannot kill anything because of amalgamation
                     break;
                 case RecordMemberAssignment recordMemberAssignment:
                     _constraints.VariableToPossibleAssignments[$"{recordMemberAssignment.RecordName}.{recordMemberAssignment.RecordMember}"] = 
-                        new HashSet<(string action, string startNode, string endNode)>();
+                        new HashSet<(string variable, string startNode, string endNode)>();
                     break;
                 case RecordAssignment recordAssignment:
                     _constraints.VariableToPossibleAssignments[$"{recordAssignment.RecordName}.{RecordMember.Fst}"] = 
-                        new HashSet<(string action, string startNode, string endNode)>();
+                        new HashSet<(string variable, string startNode, string endNode)>();
                     _constraints.VariableToPossibleAssignments[$"{recordAssignment.RecordName}.{RecordMember.Snd}"] =
-                        new HashSet<(string action, string startNode, string endNode)>();
+                        new HashSet<(string variable, string startNode, string endNode)>();
                     break;
                 case ReadVariable read:
-                    _constraints.VariableToPossibleAssignments[read.VariableName] = new HashSet<(string action, string startNode, string endNode)>();
+                    _constraints.VariableToPossibleAssignments[read.VariableName] = new HashSet<(string variable, string startNode, string endNode)>();
                     break;
                 case ReadArray readArray:
                     // A read from an array cannot kill anything because of amalgamation
                     break;
                 case ReadRecordMember recordMember:
                     _constraints.VariableToPossibleAssignments[$"{recordMember.RecordName}.{recordMember.RecordMember}"] = 
-                        new HashSet<(string action, string startNode, string endNode)>();
+                        new HashSet<(string variable, string startNode, string endNode)>();
                     break;
                 case Write write:
                     // A write cannot kill anything
