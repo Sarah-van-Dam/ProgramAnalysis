@@ -8,7 +8,7 @@ namespace Analyses.Analysis
 
         
         // ToDo: We need to figure out the return type the analyse method.
-        public abstract AnalysisResult Analyse();
+        public abstract void Analyse();
         
         
     }

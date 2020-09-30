@@ -15,7 +15,7 @@ namespace Analyses.Analysis.BitVector
 
         public abstract void Generate(Edge edge);
 
-        public override AnalysisResult Analyse()
+        public override void Analyse()
         {
             return this.SolveConstraints();
         }
@@ -25,29 +25,37 @@ namespace Analyses.Analysis.BitVector
         /// For each edge, evaluate all nodes and update the finalConstraintsForNodes 
         /// with the changes from the edge.
         /// </summary>
-        private AnalysisResult SolveConstraints()
+        private void SolveConstraints()
         {
             var programGraph = this._program; //DEBUG 
 
             bool extraRoundNeeded = true;
             int step = 0;
-            AnalysisResult result = new AnalysisResult();
+            Dictionary<Node, Constraints> result = new Dictionary<Node, Constraints>();
             Edge traversedEdge = null;
             //Node selectedNode = programGraph.Nodes.First(); - not supported by hashsets
             Node selectedNode = null;
 
-            Dictionary<Node, IConstraints> iterationResult = new Dictionary<Node, IConstraints>();
+            Dictionary<Node, Constraints> iterationResult = new Dictionary<Node, Constraints>();
 
             while (extraRoundNeeded)
             {               
                 foreach (Edge outgoingEdge in programGraph.Edges)
                 {
+
                     traversedEdge = outgoingEdge;
                     selectedNode = traversedEdge.ToNode;
                     this.Kill(traversedEdge);
-                    this.Generate(traversedEdge);                    
-                    iterationResult.Add(selectedNode, Constraints.Where(x => x.Node == selectedNode))
-                        
+                    this.Generate(traversedEdge);
+                    var constraints = Constraints.VariableToPossibleAssignments[traversedEdge.Action.ToString()];
+                    foreach (HashSet<(string action, string startNode, string endNode)> constraint in constraints)
+                    {
+                        //build constraint 
+
+
+                        iterationResult.Add(selectedNode, Constraints.VariableToPossibleAssignments[traversedEdge.Action.ToString()]);
+                    }
+
                     step++;
                     
                 }
