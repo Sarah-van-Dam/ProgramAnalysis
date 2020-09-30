@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Analyses.Graph;
 using Action = Analyses.Analysis.Actions;
 
+[assembly: InternalsVisibleTo("Analyses.Test")]
 namespace Analyses.Analysis.BitVector
 {
     public abstract class BitVectorFramework : Analysis
@@ -10,10 +12,19 @@ namespace Analyses.Analysis.BitVector
         protected Operator JoinOperator;
         protected Direction Direction;
         protected Dictionary<Node, IConstraints> FinalConstraintsForNodes;
+        internal Dictionary<Node, IConstraints> Constraints
+        {
+            get => FinalConstraintsForNodes;
+        }
 
-        public abstract void Kill(Edge edge);
+        protected BitVectorFramework(ProgramGraph programGraph)
+        {
+            _program = programGraph;
+            FinalConstraintsForNodes = new Dictionary<Node, IConstraints>();
+        }
+        public abstract void Kill(Edge edge, IConstraints constraints);
 
-        public abstract void Generate(Edge edge);
+        public abstract void Generate(Edge edge, IConstraints constraints);
 
         public override void Analyse()
         {

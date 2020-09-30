@@ -12,10 +12,16 @@ namespace Analyses.Test.Analysis.BitVector
     {
         private ReachingDefinitions _analysis;
         private const string SingleVariableName = "x";
+        private readonly List<Node> _defaultNodes;
         
         public ReachingDefinitionsTest()
         {
-            
+            var nodeStart = new Node(ProgramGraph.StartNode);
+            var node1 = new Node("q_1");
+            var node2 = new Node("q_2");
+            var node3 = new Node("q_3");
+            var nodeEnd = new Node(ProgramGraph.EndNode);
+            _defaultNodes = new List<Node>{nodeStart, node1, node2, node3, nodeEnd};
         }
 
         [Theory]
@@ -27,19 +33,23 @@ namespace Analyses.Test.Analysis.BitVector
             {
                 variableNames = new HashSet<string>{$"{variableName}.{RecordMember.Fst}", $"{variableName}.{RecordMember.Snd}"};
             }
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(variableNames));
+
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(variableNames, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge}));
 
             //If it is record declaration there will be two results, otherwise one.
-            var originalSize = _analysis.Constraints.VariableToPossibleAssignments.Count;
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var originalSize = constraint.VariableToPossibleAssignments.Count;
             var defaultConstraints = new HashSet<(string,string,string)>();
             if (originalSize == 1)
             {
-                defaultConstraints = _analysis.Constraints.VariableToPossibleAssignments.Single().Value;
+                defaultConstraints = constraint.VariableToPossibleAssignments.Single().Value;
             } else if (originalSize == 2)
             {
-                defaultConstraints.UnionWith(_analysis.Constraints.VariableToPossibleAssignments
+                defaultConstraints.UnionWith(constraint.VariableToPossibleAssignments
                     .Single(s => s.Key == $"{variableName}.{RecordMember.Fst}").Value);
-                defaultConstraints.UnionWith(_analysis.Constraints.VariableToPossibleAssignments
+                defaultConstraints.UnionWith(constraint.VariableToPossibleAssignments
                     .Single(s => s.Key == $"{variableName}.{RecordMember.Snd}").Value);
             }
             else
@@ -47,19 +57,19 @@ namespace Analyses.Test.Analysis.BitVector
                 throw new Exception("Original size was not as expected");
             }
             
-            _analysis.Kill(edge);
+            _analysis.Kill(edge,constraint);
 
-            Assert.Equal(originalSize,_analysis.Constraints.VariableToPossibleAssignments.Count);
+            Assert.Equal(originalSize,constraint.VariableToPossibleAssignments.Count);
             if (originalSize == 1)
             {
-                Assert.Equal(defaultConstraints, _analysis.Constraints.VariableToPossibleAssignments.Single().Value);
+                Assert.Equal(defaultConstraints, constraint.VariableToPossibleAssignments.Single().Value);
             }
             else
             {
                 var constraints =
-                    _analysis.Constraints.VariableToPossibleAssignments
+                    constraint.VariableToPossibleAssignments
                         .Single(s => s.Key == $"{variableName}.{RecordMember.Fst}").Value
-                        .Union(_analysis.Constraints.VariableToPossibleAssignments
+                        .Union(constraint.VariableToPossibleAssignments
                             .Single(s => s.Key == $"{variableName}.{RecordMember.Snd}").Value)
                         .ToHashSet();
                 Assert.Equal(defaultConstraints,constraints);
@@ -69,148 +79,165 @@ namespace Analyses.Test.Analysis.BitVector
         [Fact]
         public void TestKillOnVariableAssignmentKillsDefaultConstraint()
         {
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"x"}));    
+            var edge = new Edge(null, new IntAssignment{VariableName = "x",RightHandSide = "2+1"}, null);
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"x"}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));    
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             
-            _analysis.Kill(new Edge(null, new IntAssignment{VariableName = "x",RightHandSide = "2+1"}, null));
+            _analysis.Kill(edge, constraint);
 
-            var (key, value) = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments);
+            var (key, value) = Assert.Single(constraint.VariableToPossibleAssignments);
             Assert.Empty(value);
         }
+        
 
         [Fact]
         public void TestKillOnRecordMemberAssignmentKillsDefaultConstraintOfMember()
         {
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"R.Fst", "R.Snd"}));
+            var edge = new Edge(null,
+                new RecordMemberAssignment {RecordName = "R", RecordMember = RecordMember.Fst, RightHandSide = "2+1"},
+                null);
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"R.Fst", "R.Snd"}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));    
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             var originalSndConstraint =
-                _analysis.Constraints.VariableToPossibleAssignments.Single(v => v.Key == "R.Snd").Value;
+                constraint.VariableToPossibleAssignments.Single(v => v.Key == "R.Snd").Value;
 
-            _analysis.Kill(new Edge(null, new RecordMemberAssignment{RecordName = "R", RecordMember = RecordMember.Fst,RightHandSide = "2+1"}, null));
+            _analysis.Kill(edge, constraint);
 
-            var (key, value) = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments.Where( v => v.Key == "R.Fst"));
+            var (key, value) = Assert.Single(constraint.VariableToPossibleAssignments.Where( v => v.Key == "R.Fst"));
             Assert.Empty(value);
-            Assert.Equal(originalSndConstraint, _analysis.Constraints.VariableToPossibleAssignments.Single(v => v.Key == "R.Snd").Value);
+            Assert.Equal(originalSndConstraint, constraint.VariableToPossibleAssignments.Single(v => v.Key == "R.Snd").Value);
         }
         
         [Fact]
         public void TestKillOnRecordAssignmentKillsDefaultConstraints()
         {
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"R.Fst", "R.Snd"}));    
+            var edge = new Edge(null,
+                new RecordAssignment {RecordName = "R", FirstExpression = "2+1", SecondExpression = "1+2"}, null);
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"R.Fst", "R.Snd"}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));    
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             
-            _analysis.Kill(new Edge(null, new RecordAssignment{RecordName = "R",FirstExpression = "2+1", SecondExpression = "1+2"}, null));
+            _analysis.Kill(edge, constraint);
 
-            Assert.Equal(2, _analysis.Constraints.VariableToPossibleAssignments.Count);
-            Assert.Empty(_analysis.Constraints.VariableToPossibleAssignments["R.Fst"]);
-            Assert.Empty(_analysis.Constraints.VariableToPossibleAssignments["R.Snd"]);
+            Assert.Equal(2, constraint.VariableToPossibleAssignments.Count);
+            Assert.Empty(constraint.VariableToPossibleAssignments["R.Fst"]);
+            Assert.Empty(constraint.VariableToPossibleAssignments["R.Snd"]);
         }
 
+        
         [Fact]
         public void TestGenerateOnAssignmentsAddVariableNameAndNodesToTuple()
         {
-            const string fromNodeName = "q1";
-            const string toNodeName = "q2";
-            var (fromNode, toNode) = InitializeAnalysis(fromNodeName, toNodeName, SingleVariableName);
-            var edge = new Edge(fromNode, new IntAssignment {VariableName = SingleVariableName, RightHandSide = "2"},
-                toNode);
-            _analysis.Kill(edge);
+            var edge =new Edge(_defaultNodes[0], new IntAssignment {VariableName = SingleVariableName, RightHandSide = "2"},
+                _defaultNodes[1]);
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{SingleVariableName}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));    
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            _analysis.Kill(edge, constraint);
             
-            _analysis.Generate(edge);
+            _analysis.Generate(edge, constraint);
 
-            var constraint = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments).Value;
-            var insertedTuple = constraint.Single();
-            Assert.Equal(fromNodeName, insertedTuple.startNode);
-            Assert.Equal(toNodeName, insertedTuple.endNode);
+            var tuples = Assert.Single(constraint.VariableToPossibleAssignments).Value;
+            var insertedTuple = tuples.Single();
+            Assert.Equal(_defaultNodes[0].Name, insertedTuple.startNode);
+            Assert.Equal(_defaultNodes[1].Name, insertedTuple.endNode);
             Assert.Equal(SingleVariableName, insertedTuple.variable);
         }
         
         [Fact]
         public void TestGenerateOnArrayAssignmentsAddVariableNameAndNodesToTuple()
         {
-            const string fromNodeName = "q1";
-            const string toNodeName = "q2";
             const string arrayName = "A";
-            const string declarationEdgeFromName = "q_start";
-            const string declarationEdgeToName = "q_0";
-            var (fromNode, toNode) = InitializeAnalysis(fromNodeName, toNodeName, arrayName);
-            var edge = new Edge(fromNode, new ArrayAssignment {ArrayName = arrayName, Index = "1",  RightHandSide = "2"},
-                toNode);
-            GivenArrayHasBeenDeclared(arrayName, declarationEdgeFromName, declarationEdgeToName);
+            var edge =new Edge(_defaultNodes[1], new ArrayAssignment {ArrayName = arrayName, Index = "1",  RightHandSide = "2"},
+                _defaultNodes[2]);
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{arrayName}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            GivenArrayHasBeenDeclared(arrayName, _defaultNodes[0].Name, _defaultNodes[1].Name, constraint);
+
+            _analysis.Generate(edge, constraint);
             
-            _analysis.Generate(edge);
-            
-            var kvp = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments);
+            var kvp = Assert.Single(constraint.VariableToPossibleAssignments);
             Assert.Equal(2, kvp.Value.Count);
-            var constraints = _analysis.Constraints.VariableToPossibleAssignments[arrayName];
-            Assert.Contains((arrayName, fromNodeName, toNodeName), constraints);
-            Assert.Contains((arrayName, declarationEdgeFromName, declarationEdgeToName), constraints);
+            var constraints = constraint.VariableToPossibleAssignments[arrayName];
+            Assert.Contains((arrayName, _defaultNodes[1].Name, _defaultNodes[2].Name), constraints);
+            Assert.Contains((arrayName, _defaultNodes[0].Name, _defaultNodes[1].Name), constraints);
         }
 
         [Fact]
         public void TestGenerateOnRecordAssignmentsAddVariableNameAndNodesToTuple()
         {
-            const string fromNodeName = "q1";
-            const string toNodeName = "q2";
             const string recordName = "R";
             var recordFirst = $"{recordName}.{RecordMember.Fst}";
             var recordSecond = $"{recordName}.{RecordMember.Snd}";
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {recordFirst, recordSecond}));
-            var fromNode = new Node(fromNodeName);
-            var toNode = new Node(toNodeName);
-            var edge = new Edge(fromNode, new RecordAssignment {RecordName = recordName, FirstExpression = "1",  SecondExpression = "2"},
-                toNode);
-            _analysis.Kill(edge);
             
-            _analysis.Generate(edge);
+            var edge =new Edge(_defaultNodes[0], new RecordAssignment {RecordName = recordName, FirstExpression = "1",  SecondExpression = "2"},
+                _defaultNodes[1]);
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {recordFirst, recordSecond}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            _analysis.Kill(edge, constraint);
+            
+            _analysis.Generate(edge, constraint);
 
-            Assert.Equal(2, _analysis.Constraints.VariableToPossibleAssignments.Count);
+            Assert.Equal(2, constraint.VariableToPossibleAssignments.Count);
             var firstConstraint =
                 Assert.Single(
-                    _analysis.Constraints.VariableToPossibleAssignments.Where(r =>
+                    constraint.VariableToPossibleAssignments.Where(r =>
                         r.Key == recordFirst)).Value;
             var firstTuple = firstConstraint.Single();
-            Assert.Equal(fromNodeName, firstTuple.startNode);
-            Assert.Equal(toNodeName, firstTuple.endNode);
+            Assert.Equal(_defaultNodes[0].Name, firstTuple.startNode);
+            Assert.Equal(_defaultNodes[1].Name, firstTuple.endNode);
             Assert.Equal(recordFirst, firstTuple.variable);
             
             var secondConstraint =
                 Assert.Single(
-                    _analysis.Constraints.VariableToPossibleAssignments.Where(r =>
+                    constraint.VariableToPossibleAssignments.Where(r =>
                         r.Key == recordSecond)).Value;
             var secondTuple = secondConstraint.Single();
-            Assert.Equal(fromNodeName, secondTuple.startNode);
-            Assert.Equal(toNodeName, secondTuple.endNode);
+            Assert.Equal(_defaultNodes[0].Name, secondTuple.startNode);
+            Assert.Equal(_defaultNodes[1].Name, secondTuple.endNode);
             Assert.Equal(recordSecond, secondTuple.variable);
         }
         
         [Fact]
         public void TestGenerateOnRecordMemberAssignmentsAddVariableNameAndNodesToTuple()
         {
-            const string fromNodeName = "q1";
-            const string toNodeName = "q2";
             const string recordName = "R";
             var recordFirst = $"{recordName}.{RecordMember.Fst}";
             var recordSecond = $"{recordName}.{RecordMember.Snd}";
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {recordFirst, recordSecond}));
-            var fromNode = new Node(fromNodeName);
-            var toNode = new Node(toNodeName);
-            var edge = new Edge(fromNode, new RecordMemberAssignment {RecordName = recordName, RecordMember = RecordMember.Fst,  RightHandSide = "1"},
-                toNode);
-            _analysis.Kill(edge);
             
-            _analysis.Generate(edge);
+            var edge =new Edge(_defaultNodes[0], new RecordMemberAssignment {RecordName = recordName, RecordMember = RecordMember.Fst,  RightHandSide = "1"},
+                _defaultNodes[1]);
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {recordFirst, recordSecond}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            _analysis.Kill(edge, constraint);
 
-            Assert.Equal(2, _analysis.Constraints.VariableToPossibleAssignments.Count);
+            _analysis.Generate(edge, constraint);
+
+            Assert.Equal(2, constraint.VariableToPossibleAssignments.Count);
             var firstConstraint =
                 Assert.Single(
-                    _analysis.Constraints.VariableToPossibleAssignments.Where(r =>
+                    constraint.VariableToPossibleAssignments.Where(r =>
                         r.Key == recordFirst)).Value;
             var firstTuple = firstConstraint.Single();
-            Assert.Equal(fromNodeName, firstTuple.startNode);
-            Assert.Equal(toNodeName, firstTuple.endNode);
+            Assert.Equal(_defaultNodes[0].Name, firstTuple.startNode);
+            Assert.Equal(_defaultNodes[1].Name, firstTuple.endNode);
             Assert.Equal(recordFirst, firstTuple.variable);
             
             var secondConstraint =
                 Assert.Single(
-                    _analysis.Constraints.VariableToPossibleAssignments.Where(r =>
+                    constraint.VariableToPossibleAssignments.Where(r =>
                         r.Key == recordSecond)).Value;
             var secondTuple = secondConstraint.Single();
             Assert.Equal("?", secondTuple.startNode);
@@ -221,33 +248,33 @@ namespace Analyses.Test.Analysis.BitVector
         [Fact]
         public void TestGenerateOnReadRecordMemberAddVariableNameAndNodesToTuple()
         {
-            const string fromNodeName = "q1";
-            const string toNodeName = "q2";
             const string recordName = "R";
             var recordFirst = $"{recordName}.{RecordMember.Fst}";
             var recordSecond = $"{recordName}.{RecordMember.Snd}";
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {recordFirst, recordSecond}));
-            var fromNode = new Node(fromNodeName);
-            var toNode = new Node(toNodeName);
-            var edge = new Edge(fromNode, new ReadRecordMember {RecordName = recordName, RecordMember = RecordMember.Fst},
-                toNode);
-            _analysis.Kill(edge);
             
-            _analysis.Generate(edge);
+            var edge =new Edge(_defaultNodes[0], new ReadRecordMember {RecordName = recordName, RecordMember = RecordMember.Fst},
+                _defaultNodes[1]);
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {recordFirst, recordSecond}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            _analysis.Kill(edge, constraint);
 
-            Assert.Equal(2, _analysis.Constraints.VariableToPossibleAssignments.Count);
+            _analysis.Generate(edge, constraint);
+
+            Assert.Equal(2, constraint.VariableToPossibleAssignments.Count);
             var firstConstraint =
                 Assert.Single(
-                    _analysis.Constraints.VariableToPossibleAssignments.Where(r =>
+                    constraint.VariableToPossibleAssignments.Where(r =>
                         r.Key == recordFirst)).Value;
             var firstTuple = firstConstraint.Single();
-            Assert.Equal(fromNodeName, firstTuple.startNode);
-            Assert.Equal(toNodeName, firstTuple.endNode);
+            Assert.Equal(_defaultNodes[0].Name, firstTuple.startNode);
+            Assert.Equal(_defaultNodes[1].Name, firstTuple.endNode);
             Assert.Equal(recordFirst, firstTuple.variable);
             
             var secondConstraint =
                 Assert.Single(
-                    _analysis.Constraints.VariableToPossibleAssignments.Where(r =>
+                    constraint.VariableToPossibleAssignments.Where(r =>
                         r.Key == recordSecond)).Value;
             var secondTuple = secondConstraint.Single();
             Assert.Equal("?", secondTuple.startNode);
@@ -258,50 +285,43 @@ namespace Analyses.Test.Analysis.BitVector
         [Fact]
         public void TestGenerateOnReadVariableAddsVariableNameAndNodesToTuple()
         {
-            const string fromNodeName = "q1";
-            const string toNodeName = "q2";
-            var (fromNode, toNode) = InitializeAnalysis(fromNodeName, toNodeName, SingleVariableName);
-            var edge = new Edge(fromNode, new ReadVariable {VariableName = SingleVariableName},
-                toNode);
-            _analysis.Kill(edge);
-            
-            _analysis.Generate(edge);
+            var edge =new Edge(_defaultNodes[0], new ReadVariable {VariableName = SingleVariableName},
+                _defaultNodes[1]);
+            _defaultNodes[0].OutGoingEdges.Add(edge);
+            _defaultNodes[1].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {SingleVariableName}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            _analysis.Kill(edge, constraint);
 
-            var constraint = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments).Value;
-            var insertedTuple = constraint.Single();
-            Assert.Equal(fromNodeName, insertedTuple.startNode);
-            Assert.Equal(toNodeName, insertedTuple.endNode);
+            _analysis.Generate(edge, constraint);
+
+            var tuples = Assert.Single(constraint.VariableToPossibleAssignments).Value;
+            var insertedTuple = tuples.Single();
+            Assert.Equal(_defaultNodes[0].Name, insertedTuple.startNode);
+            Assert.Equal(_defaultNodes[1].Name, insertedTuple.endNode);
             Assert.Equal(SingleVariableName, insertedTuple.variable);
         }
         
         [Fact]
         public void TestGenerateOnReadArrayIndexAddsArrayNameAndNodesToTuple()
         {
-            const string fromNodeName = "q1";
-            const string toNodeName = "q2";
-            const string arrayName = "A";
-            const string declarationEdgeFromName = "q_start";
-            const string declarationEdgeToName = "q_0";
-            var (fromNode, toNode) = InitializeAnalysis(fromNodeName, toNodeName, arrayName);
-            var edge = new Edge(fromNode, new ArrayAssignment {ArrayName = arrayName, Index = "1",  RightHandSide = "2"},
-                toNode);
-            GivenArrayHasBeenDeclared(arrayName, declarationEdgeFromName, declarationEdgeToName);
+            const string arrayName = "A";   
+            var edge =new Edge(_defaultNodes[1], new ReadArray {ArrayName = arrayName, Index = "n"},
+                _defaultNodes[2]);
+            _defaultNodes[1].OutGoingEdges.Add(edge);
+            _defaultNodes[2].InGoingEdges.Add(edge);
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {arrayName}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            GivenArrayHasBeenDeclared(arrayName, _defaultNodes[0].Name, _defaultNodes[1].Name, constraint);
+            _analysis.Kill(edge, constraint);
             
-            _analysis.Generate(edge);
+            _analysis.Generate(edge, constraint);
 
-            var kvp = Assert.Single(_analysis.Constraints.VariableToPossibleAssignments);
+            var kvp = Assert.Single(constraint.VariableToPossibleAssignments);
             Assert.Equal(2, kvp.Value.Count);
-            var constraints = _analysis.Constraints.VariableToPossibleAssignments[arrayName];
-            Assert.Contains((arrayName, fromNodeName, toNodeName), constraints);
-            Assert.Contains((arrayName, declarationEdgeFromName, declarationEdgeToName), constraints);
-        }
-
-        private (Node fromNode, Node toNode) InitializeAnalysis(string fromNodeName, string toNodeName, string variableName)
-        {
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {variableName}));
-            var fromNode = new Node(fromNodeName);
-            var toNode = new Node(toNodeName);
-            return (fromNode, toNode);
+            var constraints = constraint.VariableToPossibleAssignments[arrayName];
+            Assert.Contains((arrayName, _defaultNodes[1].Name, _defaultNodes[2].Name), constraints);
+            Assert.Contains((arrayName, _defaultNodes[0].Name, _defaultNodes[1].Name), constraints);
         }
 
         public static IEnumerable<object[]> EmptyKillSetActions()
@@ -312,19 +332,20 @@ namespace Analyses.Test.Analysis.BitVector
             yield return new object[] {"R", new Edge(null, new RecordDeclaration{VariableName = "R"}, null) };
         }
         
-        private void GivenArrayHasBeenDeclared(string arrayName, string declarationStartNode, string declarationEndNode)
+        
+        private void GivenArrayHasBeenDeclared(string arrayName, string declarationStartNode, string declarationEndNode, ReachingDefinitionConstraints constraints)
         {
             var fromNode = new Node(declarationStartNode);
             var toNode = new Node(declarationEndNode);
             var edge = new Edge(fromNode, new ArrayDeclaration {ArrayName = arrayName, ArraySize= 2},
                 toNode);
-            _analysis.Kill(edge);
-            _analysis.Generate(edge);
+            _analysis.Kill(edge, constraints);
+            _analysis.Generate(edge, constraints);
         }
 
-        private ProgramGraph GenerateStandardProgramGraph(HashSet<string> variableNames)
+        private ProgramGraph GenerateStandardProgramGraph(HashSet<string> variableNames, HashSet<Node> nodes, HashSet<Edge> edges)
         {
-            return new ProgramGraph(variableNames);
+            return new ProgramGraph(variableNames, nodes, edges);
         }
     }
 }
