@@ -30,10 +30,10 @@ namespace Analyses.Graph
             VariableNames = variableNames;
         }
 
-        public override string ToString()
+        public string ToString()
         {
             return $"[\n\tNodes: (\n\t\t{string.Join(",\n\t\t", Nodes.Select(node => node.Name))}\n\t)," +
-                    $"\n\tEdges: (\n\t\t{string.Join(",\n\t\t", Edges.Select(edge => edge.ToString()))}\n\t)\n]";
+                    $"\n\tEdges: (\n\t\t{string.Join(",\n\t\t", Edges.Select(edge => edge.ToSyntax()))}\n\t)\n]";
         }
 
         /// <summary>
