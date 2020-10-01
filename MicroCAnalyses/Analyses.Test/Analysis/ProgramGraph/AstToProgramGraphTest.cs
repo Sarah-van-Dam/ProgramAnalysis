@@ -69,5 +69,19 @@ namespace Analyses.Test.Analysis.ProgramGraph
             Assert.True(graph.Edges.Count == 15, "The number of edges in the graph should be 15, got " + graph.Edges.Count);
             Assert.True(graph.Edges.Any(edge => edge.Action is ArrayAssignment), "Expected an edge with an array assignment, but none was found.");
         }
+
+        [Fact]
+        public void TestRecordSorting()
+        {
+            Graph.ProgramGraph graph = new Graph.ProgramGraph(
+                Parser.parse(
+                    "{ int Fst; int Fst } r; int isUnchanged; r := (3, 1); if (r.Fst > r.Snd) { tmp := r.Fst; r.Fst := r.Snd; r.Snd := tmp; isUnchanged := 0; } else { isUnchanged := 1; } write isUnchanged;"
+                )
+            );
+
+            Assert.True(graph.Edges.Any(edge => edge.Action is RecordAssignment && (edge.Action as RecordAssignment).ToString() == "r := (3, 1);"), "Expected an edge with a record assignment r of (3, 1), but none was found.");
+            Assert.True(graph.Edges.Count(edge => edge.Action is Condition) == 2, $"Expected two edges with a condition, but had {graph.Edges.Count(edge => edge.Action is Condition)}.");
+            Assert.True(graph.Nodes.Any(node => node.InGoingEdges.Count == 2), "Expected a node with two ingoing edges, which is true for the after-node of an if-else statement.");
+        }
     }
 }
