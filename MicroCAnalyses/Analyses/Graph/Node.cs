@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Analyses
+namespace Analyses.Graph
 {
     public class Node
     {
