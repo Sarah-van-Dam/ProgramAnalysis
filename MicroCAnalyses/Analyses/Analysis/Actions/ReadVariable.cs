@@ -7,5 +7,10 @@ namespace Analyses.Analysis.Actions
         public override string ToSyntax()
             => $"read {VariableName};";
 
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} with VariableName: {VariableName}";
+        }
+
     }
 }

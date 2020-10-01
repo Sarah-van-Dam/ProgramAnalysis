@@ -7,5 +7,11 @@ namespace Analyses.Analysis.Actions
 
         public override string ToSyntax()
             => $"int[{ArraySize}] {ArrayName};";
+
+        public override string ToString()
+        {
+            return $"ArrayDeclation with name: {ArrayName} and size {ArraySize}";
+        }
+
     }
 }

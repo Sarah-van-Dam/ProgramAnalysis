@@ -10,9 +10,8 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
     public class ReachingDefinitions : BitVectorFramework
     {
         private readonly ReachingDefinitionConstraints _constraints;
-        
-        internal ReachingDefinitionConstraints Constraints => _constraints;
 
+        internal override Constraints Constraints => _constraints;
         public ReachingDefinitions(ProgramGraph programGraph)
         {
             Direction = Direction.Forward;
@@ -79,8 +78,9 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     // A write cannot kill anything
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(edge.Action), edge.Action,
-                        $"No kill set has been generated for this action: {edge.Action} ");
+                    break;
+                    //throw new ArgumentOutOfRangeException(nameof(edge.Action), edge.Action,
+                    //    $"No kill set has been generated for this action: {edge.Action} ");
             }
         }
 
@@ -131,8 +131,9 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     // A write cannot generate anything
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(edge.Action), edge.Action,
-                        $"No gen set has been generated for this action: {edge.Action} ");
+                    break;
+                    //throw new ArgumentOutOfRangeException(nameof(edge.Action), edge.Action,
+                    //    $"No gen set has been generated for this action: {edge.Action} ");
             }
         }
     }

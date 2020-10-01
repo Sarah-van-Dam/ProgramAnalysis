@@ -8,8 +8,8 @@ namespace Analyses.Graph
 {
     public class ProgramGraph
     {
-        public HashSet<Node> Nodes { get; private set; }
-        public HashSet<Edge> Edges { get; private set; }
+        public HashSet<Node> Nodes { get; private set; } = new HashSet<Node>();
+        public HashSet<Edge> Edges { get; private set; } = new HashSet<Edge>();
         public HashSet<string> VariableNames { get; }
         public const string StartNode = "q_start";
         public const string EndNode = "q_end";

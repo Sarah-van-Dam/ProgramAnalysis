@@ -8,5 +8,11 @@ namespace Analyses.Analysis.Actions
 
         public override string ToSyntax()
             => $"{RecordName} := ({FirstExpression}, {SecondExpression});";
+
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} with RecordName: {RecordName}, FirstExpression: {FirstExpression} and SecondExpression: {SecondExpression}";
+        }
+
     }
 }

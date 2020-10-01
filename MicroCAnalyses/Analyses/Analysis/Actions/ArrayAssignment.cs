@@ -8,5 +8,11 @@ namespace Analyses.Analysis.Actions
 
         public override string ToSyntax()
             => $"{ArrayName}[{Index}] := {RightHandSide};";
+
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} with ArrayName: {ArrayName}, Index: {Index} and RightHandSide: {RightHandSide}";
+        }
+
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
+using Analyses.Graph;
+using System;
 
 namespace Analyses
 {
@@ -6,9 +8,14 @@ namespace Analyses
     {
         static void Main(string[] args)
         {
-            var test =  Parser.parse("int x; x:=1;");
+            var ast =  Parser.parse("int y; y :=1; while (x > 0) { y := x * y; x := x - 1; }");
+            var pg = new ProgramGraph(ast);
+            var rd = new ReachingDefinitions(pg);
+            rd.Analyse();
 
-            switch (test)
+            
+            // debug print outs
+            switch (ast)
             {
                 case MicroCTypes.expr.DS ds:
                     var declarations = ds.Item1;

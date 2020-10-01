@@ -7,5 +7,11 @@ namespace Analyses.Analysis.Actions
 
         public override string ToSyntax()
             => $"read {RecordName}.{RecordMember};";
+
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} with RecordName: {RecordName}, RecordMember: {RecordMember}";
+        }
+
     }
 }

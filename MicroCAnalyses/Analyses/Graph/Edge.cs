@@ -18,5 +18,11 @@ namespace Analyses.Graph
 
         public string ToSyntax()
             => $"({FromNode.Name}, {Action.ToSyntax()}, {ToNode.Name})";
+
+        public override string ToString()
+        {
+            return $"Edge with action type {this.Action.ToString()} from {FromNode} to {ToNode}";
+        }
+
     }
 }

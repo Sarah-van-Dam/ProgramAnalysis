@@ -7,6 +7,12 @@ namespace Analyses.Analysis.Actions
 
         public override string ToSyntax()
             => $"{VariableName} := {RightHandSide};";
+
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} with VariableName: {VariableName}, RightHandSide: {RightHandSide}";
+        }
+
     }
     
     

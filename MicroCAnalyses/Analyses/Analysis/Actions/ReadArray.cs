@@ -7,5 +7,11 @@ namespace Analyses.Analysis.Actions
 
         public override string ToSyntax()
             => $"read {ArrayName}[{Index}];";
+
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} with ArrayName: {ArrayName}, Index: {Index}";
+        }
+
     }
 }

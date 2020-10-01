@@ -6,5 +6,11 @@ namespace Analyses.Analysis.Actions
 
         public override string ToSyntax()
             => $"{{ int {RecordMember.Fst}; int {RecordMember.Snd} }} {VariableName};";
+
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} with VariableName: {VariableName}";
+        }
+
     }
 }
