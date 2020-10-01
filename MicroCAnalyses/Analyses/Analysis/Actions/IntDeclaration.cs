@@ -5,7 +5,7 @@ namespace Analyses.Analysis.Actions
     {
         public string VariableName { get; set; }
 
-        public override string ToString()
+        public override string ToSyntax()
             => $"int {VariableName};";
     }
 }

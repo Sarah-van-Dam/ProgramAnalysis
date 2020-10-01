@@ -42,7 +42,7 @@ namespace Analyses.Graph
         /// <returns></returns>
         public string ExportToGV(string graphConfig = "size=\"10\"\n\tnode [shape = circle];")
         {
-            return $"digraph program_graph {{\n\t{graphConfig}\n\t{string.Join("\n\t", Edges.Select(edge => $"{edge.FromNode.Name} -> {edge.ToNode.Name} [ label = \"{edge.Action.ToString()}\" ];"))}\n}}";
+            return $"digraph program_graph {{\n\t{graphConfig}\n\t{string.Join("\n\t", Edges.Select(edge => $"{edge.FromNode.Name} -> {edge.ToNode.Name} [ label = \"{edge.Action.ToSyntax()}\" ];"))}\n}}";
         }
 
         private HashSet<string> GetVariables()

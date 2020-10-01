@@ -5,7 +5,7 @@ namespace Analyses.Analysis.Actions
         public string ArrayName { get; set; }
         public string Index { get; set; }
 
-        public override string ToString()
+        public override string ToSyntax()
             => $"read {ArrayName}[{Index}];";
     }
 }

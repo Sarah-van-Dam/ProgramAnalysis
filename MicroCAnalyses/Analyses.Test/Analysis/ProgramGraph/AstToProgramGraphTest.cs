@@ -79,7 +79,7 @@ namespace Analyses.Test.Analysis.ProgramGraph
                 )
             );
 
-            Assert.True(graph.Edges.Any(edge => edge.Action is RecordAssignment && (edge.Action as RecordAssignment).ToString() == "r := (3, 1);"), "Expected an edge with a record assignment r of (3, 1), but none was found.");
+            Assert.True(graph.Edges.Any(edge => edge.Action is RecordAssignment && (edge.Action as RecordAssignment).ToSyntax() == "r := (3, 1);"), "Expected an edge with a record assignment r of (3, 1), but none was found.");
             Assert.True(graph.Edges.Count(edge => edge.Action is Condition) == 2, $"Expected two edges with a condition, but had {graph.Edges.Count(edge => edge.Action is Condition)}.");
             Assert.True(graph.Nodes.Any(node => node.InGoingEdges.Count == 2), "Expected a node with two ingoing edges, which is true for the after-node of an if-else statement.");
         }

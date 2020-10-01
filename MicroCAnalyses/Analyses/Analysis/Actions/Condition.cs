@@ -4,7 +4,7 @@
     {
         public string Cond { get; set; }
 
-        public override string ToString()
+        public override string ToSyntax()
             => Cond;
     }
 }

@@ -17,6 +17,6 @@ namespace Analyses.Graph
         }
 
         public override string ToString()
-            => $"({FromNode.Name}, {Action.ToString()}, {ToNode.Name})";
+            => $"({FromNode.Name}, {Action.ToSyntax()}, {ToNode.Name})";
     }
 }

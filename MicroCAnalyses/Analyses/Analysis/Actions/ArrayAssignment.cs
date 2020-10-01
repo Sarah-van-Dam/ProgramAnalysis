@@ -6,7 +6,7 @@ namespace Analyses.Analysis.Actions
         public string Index { get; set; }
         public string RightHandSide { get; set; }
 
-        public override string ToString()
+        public override string ToSyntax()
             => $"{ArrayName}[{Index}] := {RightHandSide};";
     }
 }
