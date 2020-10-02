@@ -34,7 +34,6 @@ open MicroCTypes
 %type <expr> start
 %type <aExpr> aExpr
 %type <bExpr> bExpr
-%type <assignableType> assignableType
 %type <statement> statement
 %type <declaration> declaration
 %type <expr> expr
@@ -71,16 +70,12 @@ bExpr:
 	| aExpr LE aExpr		{ Le($1,$3) }
 	| LPAR bExpr RPAR		{ $2 }
 
-assignableType: 
-    | VAR                   { VariableA($1) }
-    | VAR ARRAYDECLARESTART aExpr ARRAYDECLAREEND { ArrA($1, $3)}
-    | VAR DOT FST               { RecordEntryA($1, 1) }
-    | VAR DOT SND               { RecordEntryA($1, 2) }
-   
-   
 statement:
-    | assignableType ASSIGN aExpr SEMI { Assign($1, $3) }
+    | VAR ASSIGN aExpr SEMI { AssignVariable($1, $3) }
     | VAR ASSIGN LPAR aExpr COMMA aExpr RPAR SEMI { AssignRecord($1, $4, $6) }
+    | VAR ARRAYDECLARESTART aExpr ARRAYDECLAREEND ASSIGN aExpr SEMI { AssignArray($1,$3,$6)}
+    | VAR DOT FST ASSIGN aExpr SEMI { AssignRecordMember($1,$5,1)}
+    | VAR DOT SND ASSIGN aExpr SEMI { AssignRecordMember($1,$5,2)}
     | READ VAR SEMI         {Read($2)}
     | WRITE VAR SEMI        {Write($2)}
     | WHILE LPAR bExpr RPAR CURLYSTART statement CURLYEND { While($3, $6) }

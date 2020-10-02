@@ -25,15 +25,12 @@ type bExpr =
     | Ge of aExpr * aExpr
     | Less of aExpr * aExpr
     | Le of aExpr * aExpr
-
-type assignableType = 
-    | VariableA of string
-    | ArrA of string * aExpr
-    | RecordEntryA of string * int 
-
+    
 type statement = 
-    | Assign of assignableType * aExpr
+    | AssignVariable of string * aExpr
     | AssignRecord of string * aExpr * aExpr
+    | AssignArray of string * aExpr * aExpr
+    | AssignRecordMember of string * aExpr * int
     | Read of string
     | Write of string
     | While of bExpr * statement
