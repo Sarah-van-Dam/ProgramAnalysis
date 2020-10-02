@@ -33,9 +33,8 @@ namespace Analyses.Analysis.BitVector
 
         public override void Analyse()
         {
-            var graph = this._program.ExportToGV();
             this.ConstructConstraints();
-            //this.SolveConstraints();
+            this.AnalysisResult.DebugPrint();
         }
 
         /// <summary>
@@ -43,37 +42,54 @@ namespace Analyses.Analysis.BitVector
         /// </summary>
         private void ConstructConstraints()
         {
+
             //Locate q_start
+            String nodeName = "q_start";
             var startNodeConstraint = 
                 this.Constraints
-                    .FirstOrDefault(x => x.Key.Name == "q_start");
+                    .FirstOrDefault(x => x.Key.Name == nodeName);
             startNodeConstraint.DebugPrint();
 
             //construct constraint set for q_start
             var resultConstraints = this.ConstructConstraintForNode(startNodeConstraint);
             AnalysisResult.Add(startNodeConstraint.Key, resultConstraints);
 
-            //for every node after the 1st one
-            foreach (var node in this.Constraints.Skip(1))
+            //for every edge going out of that node 
+            foreach (Edge edge in this._program.Edges
+                .Where( x => x.FromNode.Name == nodeName))
             {
-                //for every edge going out of that node 
-                foreach (Edge edge in this._program.Edges
-                    .Where( x => x.FromNode.Name == node.Key.Name))
+                Console.WriteLine($"Traversing edge {edge}");
+                nodeName = edge.ToNode.Name;
+                var node = 
+                    this.Constraints
+                        .FirstOrDefault(x => x.Key.Name == nodeName);
+                
+                //the killRD
+                this.Kill(edge, node.Value);
+                foreach (var hashSet in (node.Value as ReachingDefinitionConstraints)
+                    .VariableToPossibleAssignments)
                 {
-                    Console.WriteLine($"Traversing edge {edge}");
-                    this.Kill(edge, node.Value);
-                    this.Generate(edge, node.Value);
-                    node.DebugPrint();
-
-                    foreach (var hashSet in (node.Value as ReachingDefinitionConstraints)
-                        .VariableToPossibleAssignments.Values)
-                    {
-                        resultConstraints.ExceptWith(hashSet);
-                    }
-                    Console.WriteLine(resultConstraints.AllToString());
-                    AnalysisResult.Add(node.Key, resultConstraints);
+                    //Console.WriteLine(hashSet.AllToString());
+                    resultConstraints
+                        .RemoveWhere(tuple => tuple.variable.Contains(hashSet.Key));
                 }
+                Console.WriteLine($"After killRD: {resultConstraints.AllToString()}");
+
+
+                //the genRD
+                this.Generate(edge, node.Value);
+                foreach (var hashSet in (node.Value as ReachingDefinitionConstraints)
+                    .VariableToPossibleAssignments.Values)
+                {
+                    Console.WriteLine(hashSet.AllToString());
+                    resultConstraints.UnionWith(hashSet);
+                }
+                Console.WriteLine($"After genRD: {resultConstraints.AllToString()}");
+
+                AnalysisResult.Add(node.Key, resultConstraints);
+                //AnalysisResult.DebugPrint();
             }
+            
         }
 
         private RdResult ConstructConstraintForNode(KeyValuePair<Node, IConstraints> startNodeConstraint)
@@ -86,81 +102,8 @@ namespace Analyses.Analysis.BitVector
                     result.Add(triple);
                 }
             }
-            //debug print using result object
-            Console.WriteLine(result.AllToString());
             return result;
         }
-
-        private void SolveConstraints()
-        {
-            // Implement worklist algorithm here!
-            // For each edges, evaluate all nodes and update the finalConstraintsForNodes with the changes from the edge.
-            throw new NotImplementedException();
-
-            var programGraph = this._program; //DEBUG 
-            var previousRd = "";
-
-            foreach (Edge currentEdge in programGraph.Edges)
-            {
-                Console.WriteLine(
-                    $"Traversing edge {currentEdge.Action} " +
-                    $"from node {currentEdge.FromNode.Name} " +
-                    $"to node {currentEdge.ToNode.Name}");
-
-                //this.Kill(currentEdge);
-                //this.Generate(currentEdge);
-
-
-            }
-        }
-
-        /// <summary>
-        /// Worklist algorithm;
-        /// For each edge, evaluate all nodes and update the finalConstraintsForNodes 
-        /// with the changes from the edge.
-        /// </summary>
-        private void SolveConstraintsRoundRobin()
-        {
-            var programGraph = this._program; //DEBUG 
-
-            bool extraRoundNeeded = true;
-            int step = 0;
-            Edge traversedEdge = null;
-            //Node selectedNode = programGraph.Nodes.First(); - not supported by hashsets
-            Node selectedNode = null;
-
-            Dictionary<Node, HashSet<(string, string, string)>> result =
-                new Dictionary<Node, HashSet<(string, string, string)>>();
-            Dictionary<Node, HashSet<(string, string, string)>> iterationResult =
-                new Dictionary<Node, HashSet<(string, string, string)>>();
-
-            while (extraRoundNeeded)
-            {
-                foreach (Edge outgoingEdge in programGraph.Edges)
-                {
-                    traversedEdge = outgoingEdge;
-                    selectedNode = traversedEdge.ToNode;
-                    //this.Kill(traversedEdge);
-                    //this.Generate(traversedEdge);
-
-                    //var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];
-                    //iterationResult.Add(selectedNode, constraintsForNode);
-
-
-                    step++;
-
-                }
-                if (iterationResult != result)
-                {
-                    result = iterationResult;
-                }
-                else // entire traversal has given rise to no changes
-                {
-                    extraRoundNeeded = false;
-                }
-            }
-        }
-
     }
 }
 
@@ -195,6 +138,15 @@ public static class HashSetExtensions
         }
         str = str.Remove(str.Length - 1) + "}";
         Console.WriteLine(str);
+    }
+
+    public static void DebugPrint(this Dictionary<Node, RdResult> analysisResult)
+    {
+        foreach (var node in analysisResult)
+        {
+            Console.WriteLine(node.Key);
+            Console.WriteLine(node.Value.AllToString());
+        }
     }
 }
 
