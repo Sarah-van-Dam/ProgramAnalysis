@@ -17,12 +17,12 @@ namespace Analyses
             // debug print outs
             switch (ast)
             {
-                case MicroCTypes.expr.DS ds:
+                case MicroCTypes.expressionTree.DS ds:
                     var declarations = ds.Item1;
                     var statements = ds.Item2;
                     Console.WriteLine(statements);
                     break;
-                case MicroCTypes.expr.S s:
+                case MicroCTypes.expressionTree.S s:
                     statements = s.Item;
                     break;
             }

@@ -15,7 +15,7 @@ namespace Analyses.Graph
         public const string EndNode = "q_end";
         public const string NodePrefix = "q";
 
-        public ProgramGraph(MicroCTypes.expr ast)
+        public ProgramGraph(MicroCTypes.expressionTree ast)
         {
             AstToProgramGraph(ast);
             VariableNames = GetVariables();
@@ -74,7 +74,7 @@ namespace Analyses.Graph
             return listOfVariables;
         }
 
-        private void AstToProgramGraph(MicroCTypes.expr ast)
+        private void AstToProgramGraph(MicroCTypes.expressionTree ast)
         {
             Nodes = new HashSet<Node>();
             Edges = new HashSet<Edge>();
@@ -83,10 +83,10 @@ namespace Analyses.Graph
             Nodes.Add(start);
             switch (ast)
             {
-                case MicroCTypes.expr.DS ds:
+                case MicroCTypes.expressionTree.DS ds:
                     AstToProgramGraph(ds, start, end);
                     break;
-                case MicroCTypes.expr.S s:
+                case MicroCTypes.expressionTree.S s:
                     AstToProgramGraph(s, start, end);
                     break;
             }
@@ -94,7 +94,7 @@ namespace Analyses.Graph
             Nodes.Add(end);
         }
 
-        private void AstToProgramGraph(MicroCTypes.expr.DS declStmt, Node qStart, Node qEnd)
+        private void AstToProgramGraph(MicroCTypes.expressionTree.DS declStmt, Node qStart, Node qEnd)
         {
             Node qFresh = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh);
@@ -107,20 +107,20 @@ namespace Analyses.Graph
             Edge e;
             switch (declarations)
             {
-                case MicroCTypes.declaration.ArrD arrayDecl:
+                case MicroCTypes.declaration.ArrayDeclaration arrayDecl:
                     e = new Edge(qBeforeDecl,
                         new ArrayDeclaration() {ArrayName = arrayDecl.Item1, ArraySize = arrayDecl.Item2}, qAfterDecl);
                     Edges.Add(e);
                     break;
-                case MicroCTypes.declaration.IntegerD integerDecl:
+                case MicroCTypes.declaration.IntegerDeclaration integerDecl:
                     e = new Edge(qBeforeDecl, new IntDeclaration() {VariableName = integerDecl.Item}, qAfterDecl);
                     Edges.Add(e);
                     break;
-                case MicroCTypes.declaration.RecordD recordDecl:
+                case MicroCTypes.declaration.RecordDeclaration recordDecl:
                     e = new Edge(qBeforeDecl, new RecordDeclaration() {VariableName = recordDecl.Item}, qAfterDecl);
                     Edges.Add(e);
                     break;
-                case MicroCTypes.declaration.ContinuedD c:
+                case MicroCTypes.declaration.ContinuedDeclaration c:
                     Node qFresh = new Node(NodePrefix + Nodes.Count);
                     Nodes.Add(qFresh);
                     AstToProgramGraph(c.Item1, qBeforeDecl, qFresh);
@@ -129,7 +129,7 @@ namespace Analyses.Graph
             }
         }
 
-        private void AstToProgramGraph(MicroCTypes.expr.S statement, Node qBeforeStmt, Node qAfterStmt)
+        private void AstToProgramGraph(MicroCTypes.expressionTree.S statement, Node qBeforeStmt, Node qAfterStmt)
         {
             AstToProgramGraph(statement.Item, qBeforeStmt, qAfterStmt);
         }
@@ -177,7 +177,7 @@ namespace Analyses.Graph
                 case MicroCTypes.statement.If @if:
                     AstToProgramGraph(@if, qBeforeStmt, qAfterStmt);
                     break;
-                case MicroCTypes.statement.IfE ifElse:
+                case MicroCTypes.statement.IfElse ifElse:
                     AstToProgramGraph(ifElse, qBeforeStmt, qAfterStmt);
                     break;
                 case MicroCTypes.statement.Read read:
@@ -191,7 +191,7 @@ namespace Analyses.Graph
                     e = new Edge(qBeforeStmt, new Write() {VariableName = write.Item}, qAfterStmt);
                     Edges.Add(e);
                     break;
-                case MicroCTypes.statement.ContinuedS c:
+                case MicroCTypes.statement.ContinuedStatement c:
                     Node qFresh = new Node(NodePrefix + Nodes.Count);
                     Nodes.Add(qFresh);
                     AstToProgramGraph(c.Item1, qBeforeStmt, qFresh);
@@ -211,7 +211,7 @@ namespace Analyses.Graph
             Edges.Add(edge2);
         }
 
-        private void AstToProgramGraph(MicroCTypes.statement.IfE ifElse, Node qBeforeIfE, Node qAfterIfE)
+        private void AstToProgramGraph(MicroCTypes.statement.IfElse ifElse, Node qBeforeIfE, Node qAfterIfE)
         {
             Node qFresh1 = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh1);
@@ -242,27 +242,27 @@ namespace Analyses.Graph
         /// </summary>
         /// <param name="expr"></param>
         /// <returns></returns>
-        private string AstToString(MicroCTypes.aExpr expr)
+        private string AstToString(MicroCTypes.arithmeticExpression expr)
         {
             switch (expr)
             {
-                case MicroCTypes.aExpr.Divide opr:
+                case MicroCTypes.arithmeticExpression.Divide opr:
                     return $"({AstToString(opr.Item1)} / {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Minus opr:
+                case MicroCTypes.arithmeticExpression.Minus opr:
                     return $"({AstToString(opr.Item1)} - {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Modulo opr:
+                case MicroCTypes.arithmeticExpression.Modulo opr:
                     return $"({AstToString(opr.Item1)} % {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Multiply opr:
+                case MicroCTypes.arithmeticExpression.Multiply opr:
                     return $"({AstToString(opr.Item1)} * {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Plus opr:
+                case MicroCTypes.arithmeticExpression.Plus opr:
                     return $"({AstToString(opr.Item1)} + {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Pow opr:
+                case MicroCTypes.arithmeticExpression.Power opr:
                     return $"({AstToString(opr.Item1)} ^ {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.RecordEntry opr:
+                case MicroCTypes.arithmeticExpression.RecordMember opr:
                     return $"{opr.Item1}.{(opr.Item2 == 1 ? RecordMember.Fst : RecordMember.Snd)}";
-                case MicroCTypes.aExpr.Var opr:
+                case MicroCTypes.arithmeticExpression.Variable opr:
                     return $"{opr.Item}";
-                case MicroCTypes.aExpr.N n:
+                case MicroCTypes.arithmeticExpression.Number n:
                     return n.Item.ToString();
                 default:
                     return string.Empty;
@@ -274,31 +274,31 @@ namespace Analyses.Graph
         /// </summary>
         /// <param name="expr"></param>
         /// <returns></returns>
-        private string AstToString(MicroCTypes.bExpr expr)
+        private string AstToString(MicroCTypes.booleanExpression expr)
         {
             switch (expr)
             {
-                case MicroCTypes.bExpr.And opr:
+                case MicroCTypes.booleanExpression.And opr:
                     return $"{AstToString(opr.Item1)} & {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Eq opr:
+                case MicroCTypes.booleanExpression.Equal opr:
                     return $"{AstToString(opr.Item1)} == {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Ge opr:
+                case MicroCTypes.booleanExpression.GreatEqual opr:
                     return $"{AstToString(opr.Item1)} >= {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Great opr:
+                case MicroCTypes.booleanExpression.Great opr:
                     return $"{AstToString(opr.Item1)} > {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Le opr:
+                case MicroCTypes.booleanExpression.LessEqual opr:
                     return $"{AstToString(opr.Item1)} <= {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Less opr:
+                case MicroCTypes.booleanExpression.Less opr:
                     return $"{AstToString(opr.Item1)} < {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Neq opr:
+                case MicroCTypes.booleanExpression.NotEqual opr:
                     return $"{AstToString(opr.Item1)} != {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Not opr:
+                case MicroCTypes.booleanExpression.Not opr:
                     return $"!{AstToString(opr.Item)}";
-                case MicroCTypes.bExpr.Or opr:
+                case MicroCTypes.booleanExpression.Or opr:
                     return $"{AstToString(opr.Item1)} | {AstToString(opr.Item2)}";
                 default:
-                    if (expr == MicroCTypes.bExpr.False) return "false";
-                    else if (expr == MicroCTypes.bExpr.True) return "true";
+                    if (expr == MicroCTypes.booleanExpression.False) return "false";
+                    else if (expr == MicroCTypes.booleanExpression.True) return "true";
                     else return string.Empty;
             }
         }
