@@ -8,7 +8,7 @@ namespace Analyses
     {
         static void Main(string[] args)
         {
-            var ast =  Parser.parse("int y; y :=1; while (x > 0) { y := x * y; x := x - 1; }");
+            var ast =  Parser.parse("int y; int x; y :=1; x :=5; while (x > 1) { y := x * y; x := x - 1; } x := 0;");
             var pg = new ProgramGraph(ast);
             var rd = new ReachingDefinitions(pg);
             rd.Analyse();
