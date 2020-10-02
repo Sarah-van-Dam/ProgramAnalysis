@@ -11,8 +11,7 @@ namespace Analyses.Analysis.BitVector
         protected Direction Direction;
         protected Dictionary<Node, Constraints> FinalConstraintsForNodes;
         internal abstract Constraints Constraints { get; }
-
-
+        
         public abstract void Kill(Edge edge);
 
         public abstract void Generate(Edge edge);
@@ -24,9 +23,7 @@ namespace Analyses.Analysis.BitVector
 
         private void BuildConstraintForEdge(Edge edge)
         {
-
         }
-
 
 
         private void ApplyOperator(
@@ -49,6 +46,7 @@ namespace Analyses.Analysis.BitVector
             {
                 throw new SystemException("Illegal constraint operator");
             }
+
             //return leftConstraint;
         }
 
@@ -63,10 +61,6 @@ namespace Analyses.Analysis.BitVector
                     $"Traversing edge {currentEdge.Action} " +
                     $"from node {currentEdge.FromNode.Name} " +
                     $"to node {currentEdge.ToNode.Name}");
-
-
-
-
             }
         }
 
@@ -87,7 +81,7 @@ namespace Analyses.Analysis.BitVector
 
             Dictionary<Node, HashSet<(string, string, string)>> result =
                 new Dictionary<Node, HashSet<(string, string, string)>>();
-            Dictionary<Node, HashSet<(string, string, string)>> iterationResult = 
+            Dictionary<Node, HashSet<(string, string, string)>> iterationResult =
                 new Dictionary<Node, HashSet<(string, string, string)>>();
 
             while (extraRoundNeeded)
@@ -99,13 +93,13 @@ namespace Analyses.Analysis.BitVector
                     this.Kill(traversedEdge);
                     this.Generate(traversedEdge);
 
-                    var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];                
+                    var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];
                     iterationResult.Add(selectedNode, constraintsForNode);
 
 
                     step++;
-
                 }
+
                 if (iterationResult != result)
                 {
                     result = iterationResult;
@@ -115,6 +109,6 @@ namespace Analyses.Analysis.BitVector
                     extraRoundNeeded = false;
                 }
             }
-
+        }
     }
 }
