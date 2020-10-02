@@ -25,9 +25,11 @@ namespace Analyses.Graph
         /// Constructor for unit tests
         /// </summary>
         /// <param name="variableNames"></param>
-        internal ProgramGraph(HashSet<string> variableNames)
+        internal ProgramGraph(HashSet<string> variableNames, HashSet<Node> nodes, HashSet<Edge> edges)
         {
             VariableNames = variableNames;
+            Nodes = nodes;
+            Edges = edges;
         }
 
         public override string ToString()
