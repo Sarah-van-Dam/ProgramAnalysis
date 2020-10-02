@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Analyses.Analysis.Actions;
 using Analyses.Graph;
+using Analyses.Helpers;
 
 namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
 {
-    public class ReachingDefinitions : BitVectorFramework
+    public class ReachingDefinitions : BitVectorFramework<RdResult>
     {
         public ReachingDefinitions(ProgramGraph programGraph) : base(programGraph)
         {
@@ -153,6 +154,55 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     break;
                     //throw new ArgumentOutOfRangeException(nameof(edge.Action), edge.Action,
                     //    $"No gen set has been generated for this action: {edge.Action} ");
+            }
+        }
+
+        public override void ApplyKillSet(Edge edge, IConstraints constraintSet, AnalysisResult<RdResult> result)
+        {
+            this.Kill(edge, constraintSet);
+            foreach (var hashSet in (constraintSet as ReachingDefinitionConstraints)
+                .VariableToPossibleAssignments)
+            {
+                result.RemoveWhere(tuple => tuple.variable.Contains(hashSet.Key));
+            }
+        }
+
+        public override void ApplyGenSet(Edge edge, IConstraints constraintSet, AnalysisResult<RdResult> result)
+        {
+            this.Generate(edge, constraintSet);
+            foreach (var hashSet in (constraintSet as ReachingDefinitionConstraints)
+                .VariableToPossibleAssignments.Values)
+            {
+                ((RdResult)result).UnionWith(hashSet);
+            }
+        }
+
+        public override AnalysisResult<RdResult> ConstructConstraintForStartNode(KeyValuePair<Node, IConstraints> startNodeConstraint)
+        {
+            AnalysisResult<RdResult> result = new AnalysisResult<RdResult>();
+            foreach (var hashSet in (startNodeConstraint.Value as ReachingDefinitionConstraints).VariableToPossibleAssignments.Values)
+            {
+                foreach (var triple in hashSet)
+                {
+                    result.Add(triple);
+                }
+            }
+            return result;
+        }
+
+        public override void StoreConstraintSet(Node key, AnalysisResult<RdResult> constraintSet)
+        {
+            Console.WriteLine($"Storing constraint set {constraintSet.AllToString()} on node {key.Name}");
+            if (this.AnalysisResult.Keys.Contains(key))
+            {
+                AnalysisResult<RdResult> valueToChange = null;
+                AnalysisResult.TryGetValue(key, out valueToChange);
+                valueToChange.UnionWith(constraintSet);
+                AnalysisResult[key] = valueToChange;
+            }
+            else
+            {
+                AnalysisResult.Add(key, constraintSet);
             }
         }
     }
