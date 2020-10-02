@@ -28,7 +28,8 @@ namespace Analyses.Analysis.BitVector
 
         public override void Analyse()
         {
-            SolveConstraints();
+            this.ConstructConstraints();
+            //this.SolveConstraints();
         }
 
         /// <summary>
@@ -118,8 +119,8 @@ namespace Analyses.Analysis.BitVector
                     $"from node {currentEdge.FromNode.Name} " +
                     $"to node {currentEdge.ToNode.Name}");
 
-                this.Kill(currentEdge);
-                this.Generate(currentEdge);
+                //this.Kill(currentEdge);
+                //this.Generate(currentEdge);
 
 
             }
