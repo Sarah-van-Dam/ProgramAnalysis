@@ -15,7 +15,7 @@ namespace Analyses.Graph
         public const string EndNode = "q_end";
         public const string NodePrefix = "q";
 
-        public ProgramGraph(MicroCTypes.expr ast)
+        public ProgramGraph(MicroCTypes.expressionTree ast)
         {
             AstToProgramGraph(ast);
             VariableNames = GetVariables();
@@ -32,10 +32,10 @@ namespace Analyses.Graph
             Edges = edges;
         }
 
-        public string ToString()
+        public override string ToString()
         {
             return $"[\n\tNodes: (\n\t\t{string.Join(",\n\t\t", Nodes.Select(node => node.Name))}\n\t)," +
-                    $"\n\tEdges: (\n\t\t{string.Join(",\n\t\t", Edges.Select(edge => edge.ToSyntax()))}\n\t)\n]";
+                   $"\n\tEdges: (\n\t\t{string.Join(",\n\t\t", Edges.Select(edge => edge.ToSyntax()))}\n\t)\n]";
         }
 
         /// <summary>
@@ -44,7 +44,8 @@ namespace Analyses.Graph
         /// <returns></returns>
         public string ExportToGV(string graphConfig = "size=\"10\"\n\tnode [shape = circle];")
         {
-            return $"digraph program_graph {{\n\t{graphConfig}\n\t{string.Join("\n\t", Edges.Select(edge => $"{edge.FromNode.Name} -> {edge.ToNode.Name} [ label = \"{edge.Action.ToSyntax()}\" ];"))}\n}}";
+            return
+                $"digraph program_graph {{\n\t{graphConfig}\n\t{string.Join("\n\t", Edges.Select(edge => $"{edge.FromNode.Name} -> {edge.ToNode.Name} [ label = \"{edge.Action.ToSyntax()}\" ];"))}\n}}";
         }
 
         private HashSet<string> GetVariables()
@@ -75,7 +76,7 @@ namespace Analyses.Graph
             return listOfVariables;
         }
 
-        private void AstToProgramGraph(MicroCTypes.expr ast)
+        private void AstToProgramGraph(MicroCTypes.expressionTree ast)
         {
             Nodes = new HashSet<Node>();
             Edges = new HashSet<Edge>();
@@ -84,17 +85,18 @@ namespace Analyses.Graph
             Nodes.Add(start);
             switch (ast)
             {
-                case MicroCTypes.expr.DS ds:
+                case MicroCTypes.expressionTree.DS ds:
                     AstToProgramGraph(ds, start, end);
                     break;
-                case MicroCTypes.expr.S s:
+                case MicroCTypes.expressionTree.S s:
                     AstToProgramGraph(s, start, end);
                     break;
             }
+
             Nodes.Add(end);
         }
 
-        private void AstToProgramGraph(MicroCTypes.expr.DS declStmt, Node qStart, Node qEnd)
+        private void AstToProgramGraph(MicroCTypes.expressionTree.DS declStmt, Node qStart, Node qEnd)
         {
             Node qFresh = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh);
@@ -107,19 +109,20 @@ namespace Analyses.Graph
             Edge e;
             switch (declarations)
             {
-                case MicroCTypes.declaration.ArrD arrayDecl:
-                    e = new Edge(qBeforeDecl, new ArrayDeclaration() { ArrayName = arrayDecl.Item1, ArraySize = arrayDecl.Item2 }, qAfterDecl);
+                case MicroCTypes.declaration.ArrayDeclaration arrayDecl:
+                    e = new Edge(qBeforeDecl,
+                        new ArrayDeclaration() {ArrayName = arrayDecl.Item1, ArraySize = arrayDecl.Item2}, qAfterDecl);
                     Edges.Add(e);
                     break;
-                case MicroCTypes.declaration.IntegerD integerDecl:
-                    e = new Edge(qBeforeDecl, new IntDeclaration() { VariableName = integerDecl.Item }, qAfterDecl);
+                case MicroCTypes.declaration.IntegerDeclaration integerDecl:
+                    e = new Edge(qBeforeDecl, new IntDeclaration() {VariableName = integerDecl.Item}, qAfterDecl);
                     Edges.Add(e);
                     break;
-                case MicroCTypes.declaration.RecordD recordDecl:
-                    e = new Edge(qBeforeDecl, new RecordDeclaration() { VariableName = recordDecl.Item }, qAfterDecl);
+                case MicroCTypes.declaration.RecordDeclaration recordDecl:
+                    e = new Edge(qBeforeDecl, new RecordDeclaration() {VariableName = recordDecl.Item}, qAfterDecl);
                     Edges.Add(e);
                     break;
-                case MicroCTypes.declaration.ContinuedD c:
+                case MicroCTypes.declaration.ContinuedDeclaration c:
                     Node qFresh = new Node(NodePrefix + Nodes.Count);
                     Nodes.Add(qFresh);
                     AstToProgramGraph(c.Item1, qBeforeDecl, qFresh);
@@ -128,7 +131,7 @@ namespace Analyses.Graph
             }
         }
 
-        private void AstToProgramGraph(MicroCTypes.expr.S statement, Node qBeforeStmt, Node qAfterStmt)
+        private void AstToProgramGraph(MicroCTypes.expressionTree.S statement, Node qBeforeStmt, Node qAfterStmt)
         {
             AstToProgramGraph(statement.Item, qBeforeStmt, qAfterStmt);
         }
@@ -138,36 +141,31 @@ namespace Analyses.Graph
             Edge e;
             switch (statement)
             {
-                case MicroCTypes.statement.Assign assignment:
-                    switch (assignment.Item1)
+                case MicroCTypes.statement.AssignVariable assignment:
+                    e = new Edge(qBeforeStmt, new IntAssignment
                     {
-                        case MicroCTypes.assignableType.ArrA arrayAssignment:
-                            e = new Edge(qBeforeStmt, new ArrayAssignment()
-                            {
-                                ArrayName = arrayAssignment.Item1,
-                                Index = AstToString(arrayAssignment.Item2),
-                                RightHandSide = AstToString(assignment.Item2)
-                            }, qAfterStmt);
-                            Edges.Add(e);
-                            break;
-                        case MicroCTypes.assignableType.RecordEntryA recordEntryAssignment:
-                            e = new Edge(qBeforeStmt, new RecordMemberAssignment()
-                            {
-                                RecordName = recordEntryAssignment.Item1,
-                                RecordMember = recordEntryAssignment.Item2 == 1 ? RecordMember.Fst : RecordMember.Snd,
-                                RightHandSide = AstToString(assignment.Item2)
-                            }, qAfterStmt);
-                            Edges.Add(e);
-                            break;
-                        case MicroCTypes.assignableType.VariableA variableAssignment:
-                            e = new Edge(qBeforeStmt, new IntAssignment()
-                            {
-                                VariableName = variableAssignment.Item,
-                                RightHandSide = AstToString(assignment.Item2)
-                            }, qAfterStmt);
-                            Edges.Add(e);
-                            break;
-                    }
+                        VariableName = assignment.Item1,
+                        RightHandSide = AstToString(assignment.Item2)
+                    }, qAfterStmt);
+                    Edges.Add(e);
+                    break;
+                case MicroCTypes.statement.AssignArray arrayAssignment:
+                    e = new Edge(qBeforeStmt, new ArrayAssignment()
+                    {
+                        ArrayName = arrayAssignment.Item1,
+                        Index = AstToString(arrayAssignment.Item2),
+                        RightHandSide = AstToString(arrayAssignment.Item2)
+                    }, qAfterStmt);
+                    Edges.Add(e);
+                    break;
+                case MicroCTypes.statement.AssignRecordMember recordEntryAssignment:
+                    e = new Edge(qBeforeStmt, new RecordMemberAssignment()
+                    {
+                        RecordName = recordEntryAssignment.Item1,
+                        RecordMember = recordEntryAssignment.Item3 == 1 ? RecordMember.Fst : RecordMember.Snd,
+                        RightHandSide = AstToString(recordEntryAssignment.Item2)
+                    }, qAfterStmt);
+                    Edges.Add(e);
                     break;
                 case MicroCTypes.statement.AssignRecord recordAssignment:
                     e = new Edge(qBeforeStmt, new RecordAssignment()
@@ -181,21 +179,21 @@ namespace Analyses.Graph
                 case MicroCTypes.statement.If @if:
                     AstToProgramGraph(@if, qBeforeStmt, qAfterStmt);
                     break;
-                case MicroCTypes.statement.IfE ifElse:
+                case MicroCTypes.statement.IfElse ifElse:
                     AstToProgramGraph(ifElse, qBeforeStmt, qAfterStmt);
                     break;
                 case MicroCTypes.statement.Read read:
-                    e = new Edge(qBeforeStmt, new ReadVariable() { VariableName = read.Item }, qAfterStmt);
+                    e = new Edge(qBeforeStmt, new ReadVariable() {VariableName = read.Item}, qAfterStmt);
                     Edges.Add(e);
                     break;
                 case MicroCTypes.statement.While @while:
                     AstToProgramGraph(@while, qBeforeStmt, qAfterStmt);
                     break;
                 case MicroCTypes.statement.Write write:
-                    e = new Edge(qBeforeStmt, new Write() { VariableName = write.Item }, qAfterStmt);
+                    e = new Edge(qBeforeStmt, new Write() {VariableName = write.Item}, qAfterStmt);
                     Edges.Add(e);
                     break;
-                case MicroCTypes.statement.ContinuedS c:
+                case MicroCTypes.statement.ContinuedStatement c:
                     Node qFresh = new Node(NodePrefix + Nodes.Count);
                     Nodes.Add(qFresh);
                     AstToProgramGraph(c.Item1, qBeforeStmt, qFresh);
@@ -208,23 +206,23 @@ namespace Analyses.Graph
         {
             Node qFresh = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh);
-            Edge edge1 = new Edge(qBeforeIf, new Condition() { Cond = AstToString(@if.Item1) }, qFresh);
+            Edge edge1 = new Edge(qBeforeIf, new Condition() {Cond = AstToString(@if.Item1)}, qFresh);
             Edges.Add(edge1);
             AstToProgramGraph(@if.Item2, qFresh, qAfterIf);
-            Edge edge2 = new Edge(qBeforeIf, new Condition() { Cond = $"!({AstToString(@if.Item1)})" }, qAfterIf);
+            Edge edge2 = new Edge(qBeforeIf, new Condition() {Cond = $"!({AstToString(@if.Item1)})"}, qAfterIf);
             Edges.Add(edge2);
         }
 
-        private void AstToProgramGraph(MicroCTypes.statement.IfE ifElse, Node qBeforeIfE, Node qAfterIfE)
+        private void AstToProgramGraph(MicroCTypes.statement.IfElse ifElse, Node qBeforeIfE, Node qAfterIfE)
         {
             Node qFresh1 = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh1);
-            Edge edge1 = new Edge(qBeforeIfE, new Condition() { Cond = AstToString(ifElse.Item1) }, qFresh1);
+            Edge edge1 = new Edge(qBeforeIfE, new Condition() {Cond = AstToString(ifElse.Item1)}, qFresh1);
             Edges.Add(edge1);
             AstToProgramGraph(ifElse.Item2, qFresh1, qAfterIfE);
             Node qFresh2 = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh2);
-            Edge edge2 = new Edge(qBeforeIfE, new Condition() { Cond = $"!({AstToString(ifElse.Item1)})" }, qFresh2);
+            Edge edge2 = new Edge(qBeforeIfE, new Condition() {Cond = $"!({AstToString(ifElse.Item1)})"}, qFresh2);
             Edges.Add(edge2);
             AstToProgramGraph(ifElse.Item3, qFresh2, qAfterIfE);
         }
@@ -233,10 +231,11 @@ namespace Analyses.Graph
         {
             Node qFresh = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh);
-            Edge edge1 = new Edge(qBeforeWhile, new Condition() { Cond = AstToString(@while.Item1) }, qFresh);
+            Edge edge1 = new Edge(qBeforeWhile, new Condition() {Cond = AstToString(@while.Item1)}, qFresh);
             Edges.Add(edge1);
             AstToProgramGraph(@while.Item2, qFresh, qBeforeWhile);
-            Edge edge2 = new Edge(qBeforeWhile, new Condition() { Cond = $"!({AstToString(@while.Item1)})" }, qAfterWhile);
+            Edge edge2 = new Edge(qBeforeWhile, new Condition() {Cond = $"!({AstToString(@while.Item1)})"},
+                qAfterWhile);
             Edges.Add(edge2);
         }
 
@@ -245,27 +244,27 @@ namespace Analyses.Graph
         /// </summary>
         /// <param name="expr"></param>
         /// <returns></returns>
-        private string AstToString(MicroCTypes.aExpr expr)
+        private string AstToString(MicroCTypes.arithmeticExpression expr)
         {
             switch (expr)
             {
-                case MicroCTypes.aExpr.Divide opr:
+                case MicroCTypes.arithmeticExpression.Divide opr:
                     return $"({AstToString(opr.Item1)} / {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Minus opr:
+                case MicroCTypes.arithmeticExpression.Minus opr:
                     return $"({AstToString(opr.Item1)} - {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Modulo opr:
+                case MicroCTypes.arithmeticExpression.Modulo opr:
                     return $"({AstToString(opr.Item1)} % {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Multiply opr:
+                case MicroCTypes.arithmeticExpression.Multiply opr:
                     return $"({AstToString(opr.Item1)} * {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Plus opr:
+                case MicroCTypes.arithmeticExpression.Plus opr:
                     return $"({AstToString(opr.Item1)} + {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.Pow opr:
+                case MicroCTypes.arithmeticExpression.Power opr:
                     return $"({AstToString(opr.Item1)} ^ {AstToString(opr.Item2)})";
-                case MicroCTypes.aExpr.RecordEntry opr:
+                case MicroCTypes.arithmeticExpression.RecordMember opr:
                     return $"{opr.Item1}.{(opr.Item2 == 1 ? RecordMember.Fst : RecordMember.Snd)}";
-                case MicroCTypes.aExpr.Var opr:
+                case MicroCTypes.arithmeticExpression.Variable opr:
                     return $"{opr.Item}";
-                case MicroCTypes.aExpr.N n:
+                case MicroCTypes.arithmeticExpression.Number n:
                     return n.Item.ToString();
                 default:
                     return string.Empty;
@@ -277,31 +276,31 @@ namespace Analyses.Graph
         /// </summary>
         /// <param name="expr"></param>
         /// <returns></returns>
-        private string AstToString(MicroCTypes.bExpr expr)
+        private string AstToString(MicroCTypes.booleanExpression expr)
         {
             switch (expr)
             {
-                case MicroCTypes.bExpr.And opr:
+                case MicroCTypes.booleanExpression.And opr:
                     return $"{AstToString(opr.Item1)} & {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Eq opr:
+                case MicroCTypes.booleanExpression.Equal opr:
                     return $"{AstToString(opr.Item1)} == {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Ge opr:
+                case MicroCTypes.booleanExpression.GreatEqual opr:
                     return $"{AstToString(opr.Item1)} >= {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Great opr:
+                case MicroCTypes.booleanExpression.Great opr:
                     return $"{AstToString(opr.Item1)} > {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Le opr:
+                case MicroCTypes.booleanExpression.LessEqual opr:
                     return $"{AstToString(opr.Item1)} <= {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Less opr:
+                case MicroCTypes.booleanExpression.Less opr:
                     return $"{AstToString(opr.Item1)} < {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Neq opr:
+                case MicroCTypes.booleanExpression.NotEqual opr:
                     return $"{AstToString(opr.Item1)} != {AstToString(opr.Item2)}";
-                case MicroCTypes.bExpr.Not opr:
+                case MicroCTypes.booleanExpression.Not opr:
                     return $"!{AstToString(opr.Item)}";
-                case MicroCTypes.bExpr.Or opr:
+                case MicroCTypes.booleanExpression.Or opr:
                     return $"{AstToString(opr.Item1)} | {AstToString(opr.Item2)}";
                 default:
-                    if (expr == MicroCTypes.bExpr.False) return "false";
-                    else if (expr == MicroCTypes.bExpr.True) return "true";
+                    if (expr == MicroCTypes.booleanExpression.False) return "false";
+                    else if (expr == MicroCTypes.booleanExpression.True) return "true";
                     else return string.Empty;
             }
         }

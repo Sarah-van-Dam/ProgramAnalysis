@@ -31,31 +31,30 @@ open MicroCTypes
 %start start
 
 // declare returntype of non-terminal symbols
-%type <expr> start
-%type <aExpr> aExpr
-%type <bExpr> bExpr
-%type <assignableType> assignableType
+%type <expressionTree> start
+%type <arithmeticExpression> aExpr
+%type <booleanExpression> bExpr
 %type <statement> statement
 %type <declaration> declaration
-%type <expr> expr
+%type <expressionTree> expressionTree
 
 %%
 
-start: expr EOF 			{ $1 }
+start: expressionTree EOF 			{ $1 }
 
 aExpr:
-	| INT     				{ N($1) }
+	| INT     				{ Number($1) }
 	| aExpr MULTIPLY aExpr	{ Multiply($1,$3) }
 	| aExpr DIVIDE aExpr	{ Divide($1,$3) }
 	| aExpr PLUS aExpr		{ Plus($1,$3) }
 	| aExpr MINUS aExpr		{ Minus($1,$3) }
-	| aExpr POWER aExpr		{ Pow($1,$3)}
+	| aExpr POWER aExpr		{ Power($1,$3)}
     | aExpr MODULO aExpr    { Modulo($1, $3) }
 	| LPAR aExpr RPAR		{ $2 }
-	| VAR                   { Var($1)}
-    | VAR ARRAYDECLARESTART aExpr ARRAYDECLAREEND   { Arr($1, $3)}
-    | VAR DOT FST           { RecordEntry($1, 1)}
-    | VAR DOT SND           { RecordEntry($1, 2)}
+	| VAR                   { Variable($1)}
+    | VAR ARRAYDECLARESTART aExpr ARRAYDECLAREEND   { ArrayMember($1, $3)}
+    | VAR DOT FST           { RecordMember($1, 1)}
+    | VAR DOT SND           { RecordMember($1, 2)}
 
 bExpr:
 	| TRUE 					{ True }
@@ -63,38 +62,34 @@ bExpr:
 	| bExpr AND bExpr		{ And($1,$3) }
 	| bExpr OR bExpr		{ Or($1,$3) }
 	| NOT bExpr				{ Not($2) }
-	| aExpr EQ aExpr		{ Eq($1,$3) }
-	| aExpr NEQ aExpr		{ Neq($1,$3) }
+	| aExpr EQ aExpr		{ Equal($1,$3) }
+	| aExpr NEQ aExpr		{ NotEqual($1,$3) }
 	| aExpr G aExpr			{ Great($1,$3) }
-	| aExpr GE aExpr		{ Ge($1,$3) }
+	| aExpr GE aExpr		{ GreatEqual($1,$3) }
 	| aExpr L aExpr			{ Less($1,$3) }
-	| aExpr LE aExpr		{ Le($1,$3) }
+	| aExpr LE aExpr		{ LessEqual($1,$3) }
 	| LPAR bExpr RPAR		{ $2 }
 
-assignableType: 
-    | VAR                   { VariableA($1) }
-    | VAR ARRAYDECLARESTART aExpr ARRAYDECLAREEND { ArrA($1, $3)}
-    | VAR DOT FST               { RecordEntryA($1, 1) }
-    | VAR DOT SND               { RecordEntryA($1, 2) }
-   
-   
 statement:
-    | assignableType ASSIGN aExpr SEMI { Assign($1, $3) }
+    | VAR ASSIGN aExpr SEMI { AssignVariable($1, $3) }
     | VAR ASSIGN LPAR aExpr COMMA aExpr RPAR SEMI { AssignRecord($1, $4, $6) }
+    | VAR ARRAYDECLARESTART aExpr ARRAYDECLAREEND ASSIGN aExpr SEMI { AssignArray($1,$3,$6)}
+    | VAR DOT FST ASSIGN aExpr SEMI { AssignRecordMember($1,$5,1)}
+    | VAR DOT SND ASSIGN aExpr SEMI { AssignRecordMember($1,$5,2)}
     | READ VAR SEMI         {Read($2)}
     | WRITE VAR SEMI        {Write($2)}
     | WHILE LPAR bExpr RPAR CURLYSTART statement CURLYEND { While($3, $6) }
     | IF LPAR bExpr RPAR CURLYSTART statement CURLYEND %prec IF { If($3, $6) } 
-    | IF LPAR bExpr RPAR CURLYSTART statement CURLYEND ELSE CURLYSTART statement CURLYEND %prec ELSE { IfE($3, $6, $10) }
-    | statement statement %prec STATEMENT { ContinuedS($1, $2) }
+    | IF LPAR bExpr RPAR CURLYSTART statement CURLYEND ELSE CURLYSTART statement CURLYEND %prec ELSE { IfElse($3, $6, $10) }
+    | statement statement %prec STATEMENT { ContinuedStatement($1, $2) }
 
 declaration:
-    | INTDECLARE VAR SEMI { IntegerD($2) }
-    | INTDECLARE ARRAYDECLARESTART INT ARRAYDECLAREEND VAR SEMI { ArrD($5, $3) }
-    | CURLYSTART INTDECLARE FST SEMI INTDECLARE SND CURLYEND VAR SEMI { RecordD($8) }
-    | declaration declaration %prec STATEMENT { ContinuedD($1, $2) }
+    | INTDECLARE VAR SEMI { IntegerDeclaration($2) }
+    | INTDECLARE ARRAYDECLARESTART INT ARRAYDECLAREEND VAR SEMI { ArrayDeclaration($5, $3) }
+    | CURLYSTART INTDECLARE FST SEMI INTDECLARE SND CURLYEND VAR SEMI { RecordDeclaration($8) }
+    | declaration declaration %prec STATEMENT { ContinuedDeclaration($1, $2) }
 
-expr:
+expressionTree:
     | declaration statement { DS($1, $2) }
     | statement { S($1) }
     
