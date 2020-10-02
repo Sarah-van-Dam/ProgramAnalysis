@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,7 +75,7 @@ namespace Analyses.Test.Analysis.ProgramGraph
         {
             Graph.ProgramGraph graph = new Graph.ProgramGraph(
                 Parser.parse(
-                    "{ int Fst; int Fst } r; int isUnchanged; r := (3, 1); if (r.Fst > r.Snd) { tmp := r.Fst; r.Fst := r.Snd; r.Snd := tmp; isUnchanged := 0; } else { isUnchanged := 1; } write isUnchanged;"
+                    "{ int fst; int snd } r; int isUnchanged; r := (3, 1); if (r.fst > r.snd) { tmp := r.fst; r.fst := r.snd; r.snd := tmp; isUnchanged := 0; } else { isUnchanged := 1; } write isUnchanged;"
                 )
             );
 
