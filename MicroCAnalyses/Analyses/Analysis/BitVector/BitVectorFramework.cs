@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
+using Analyses;
+using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Graph;
 using Action = Analyses.Analysis.Actions;
 
@@ -16,6 +20,7 @@ namespace Analyses.Analysis.BitVector
         {
             get => FinalConstraintsForNodes;
         }
+        protected Dictionary<Node, RdResult> AnalysisResult = new Dictionary<Node, RdResult>();
 
         protected BitVectorFramework(ProgramGraph programGraph)
         {
@@ -28,79 +33,62 @@ namespace Analyses.Analysis.BitVector
 
         public override void Analyse()
         {
+            var graph = this._program.ExportToGV();
             this.ConstructConstraints();
             //this.SolveConstraints();
         }
 
         /// <summary>
-        /// //todo: generate constraints : go through program tree and based on edges do that
+        /// todo: generate constraints : go through program tree and based on edges do that
         /// </summary>
         private void ConstructConstraints()
         {
-
-            Node nextNode = null;
-            //for now - do constraints as strings; afterwards -> turn them into sets
-            Dictionary<string, string> constraints = new Dictionary<string, string>();//<nodeName, nodeConstraints>
-
             //Locate q_start
-            foreach (Edge edge in this._program.Edges)
-            {
-                if (edge.FromNode.Name == "q_start")
-                {
-                    //hardcode constraint {(x, ?, q_start), (y, ?, q_start)} if Var = {x,y} and Arr = {}
-                    //var startNodeConstraint = this.Constraints.VariableToPossibleAssignments["x"];
-                    //var startNodeConstraint2 = this.Constraints.VariableToPossibleAssignments["y"];
-                    //constraints.Add("q_start", $"{startNodeConstraint}, {startNodeConstraint2}");
-                    //store next node
-                    nextNode = edge.ToNode;
-                }
-            }
-            //for every node after  q_start
-            while (true)
-            {
-                foreach (Edge edge in this._program.Edges)
-                {
-                    if (edge.FromNode.Name == nextNode.Name)
-                    {
-                        string previousNodeConstraint = string.Empty;
-                        constraints.TryGetValue(edge.FromNode.Name, out previousNodeConstraint);
+            var startNodeConstraint = 
+                this.Constraints
+                    .FirstOrDefault(x => x.Key.Name == "q_start");
+            startNodeConstraint.DebugPrint();
 
-                        //constraints.Add(edge.ToNode.Name, $"Is subset of " +
-                        //    $"{previousNodeConstraint} minus" +
-                        //    $"{Kill(edge)} plus" + //TODO: change these to return values
-                        //    $"{Generate(edge)}");
-                        //constraintRD(edge.ToNode).IsSubsetOf(constraintRD(edge.fromNode) - killRD(edge) + genRD(edge)));
-                        nextNode = edge.ToNode;
+            //construct constraint set for q_start
+            var resultConstraints = this.ConstructConstraintForNode(startNodeConstraint);
+            AnalysisResult.Add(startNodeConstraint.Key, resultConstraints);
+
+            //for every node after the 1st one
+            foreach (var node in this.Constraints.Skip(1))
+            {
+                //for every edge going out of that node 
+                foreach (Edge edge in this._program.Edges
+                    .Where( x => x.FromNode.Name == node.Key.Name))
+                {
+                    Console.WriteLine($"Traversing edge {edge}");
+                    this.Kill(edge, node.Value);
+                    this.Generate(edge, node.Value);
+                    node.DebugPrint();
+
+                    foreach (var hashSet in (node.Value as ReachingDefinitionConstraints)
+                        .VariableToPossibleAssignments.Values)
+                    {
+                        resultConstraints.ExceptWith(hashSet);
                     }
+                    Console.WriteLine(resultConstraints.AllToString());
+                    AnalysisResult.Add(node.Key, resultConstraints);
                 }
             }
         }
 
-
-
-
-
-        private void ApplyOperator(
-            HashSet<(string action, string startNode, string endNode)> constraint)
+        private RdResult ConstructConstraintForNode(KeyValuePair<Node, IConstraints> startNodeConstraint)
         {
-            //extract left and right constraint
-            (string action, string startNode, string endNode) leftConstraint = ("", "", "");
-            (string action, string startNode, string endNode) rightConstraint = ("", "", "");
-
-
-            if (this.JoinOperator == Operator.Union)
+            RdResult result = new RdResult();
+            foreach (var hashSet in (startNodeConstraint.Value as ReachingDefinitionConstraints).VariableToPossibleAssignments.Values)
             {
-                //leftConstraint.UnionWith(rightConstraint);
+                foreach (var triple in hashSet)
+                {
+                    result.Add(triple);
+                }
             }
-            else if (this.JoinOperator == Operator.Intersection)
-            {
-                //leftConstraint.IntersectWith(rightConstraint);
-            }
-            else
-            {
-                throw new SystemException("Illegal constraint operator");
-            }
-            //return leftConstraint;
+            //debug print using result object
+            Console.WriteLine(result.AllToString());
+            return result;
         }
 
         private void SolveConstraints()
@@ -175,3 +163,38 @@ namespace Analyses.Analysis.BitVector
 
     }
 }
+
+public class RdResult: HashSet<(string variable, string startNode, string endNode)>
+{
+
+}
+
+public static class HashSetExtensions
+{
+    public static string AllToString(this HashSet<(string, string, string)> hashset)
+    {
+        lock (hashset)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in hashset)
+                sb.Append(item);
+            return sb.ToString();
+        }
+    }
+
+    public static void DebugPrint(this KeyValuePair<Node, IConstraints>  startNodeConstraint)
+    {
+        var rdConstraints = (startNodeConstraint.Value as ReachingDefinitionConstraints).VariableToPossibleAssignments;
+
+        //debug print using string
+        var str = $"RD({startNodeConstraint.Key.Name}) is a superset of " +
+                  "{";
+        foreach (var line in rdConstraints)
+        {
+            str = str + $"{line.Value.AllToString()},";
+        }
+        str = str.Remove(str.Length - 1) + "}";
+        Console.WriteLine(str);
+    }
+}
+
