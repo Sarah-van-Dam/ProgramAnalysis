@@ -37,60 +37,11 @@ namespace Analyses.Analysis.BitVector
             this.AnalysisResult.DebugPrint();
         }
 
-        /// <summary>
-        /// todo: generate constraints : go through program tree and based on edges do that
-        /// </summary>
-        private void ConstructConstraints()
+        private KeyValuePair<Node, IConstraints> GetNextNode(string toNodeName)
         {
-            //Locate q_start
-            String nodeName = "q_start";
-            var startNodeConstraint = 
-                this.Constraints
-                    .FirstOrDefault(x => x.Key.Name == nodeName);
-            startNodeConstraint.DebugPrint();
-
-            //construct constraint set for q_start
-            var resultConstraints = this.ConstructConstraintForStartNode(startNodeConstraint);
-            AnalysisResult.Add(startNodeConstraint.Key, resultConstraints);
-
-            //for every edge going out of that node 
-            foreach (Edge edge in this._program.Edges
-                .Where( x => x.FromNode.Name == nodeName))
-            {
-                Console.WriteLine($"Traversing edge {edge}");
-                nodeName = edge.ToNode.Name;
-                var node = 
-                    this.Constraints
-                        .FirstOrDefault(x => x.Key.Name == nodeName);
-                
-                //the killRD
-                this.Kill(edge, node.Value);
-                foreach (var hashSet in (node.Value as ReachingDefinitionConstraints)
-                    .VariableToPossibleAssignments)
-                {
-                    //Console.WriteLine(hashSet.AllToString());
-                    resultConstraints
-                        .RemoveWhere(tuple => tuple.variable.Contains(hashSet.Key));
-                }
-                Console.WriteLine($"After killRD: {resultConstraints.AllToString()}");
-
-
-                //the genRD
-                this.Generate(edge, node.Value);
-                foreach (var hashSet in (node.Value as ReachingDefinitionConstraints)
-                    .VariableToPossibleAssignments.Values)
-                {
-                    Console.WriteLine(hashSet.AllToString());
-                    resultConstraints.UnionWith(hashSet);
-                }
-                Console.WriteLine($"After genRD: {resultConstraints.AllToString()}");
-
-                AnalysisResult.Add(node.Key, resultConstraints);
-                //AnalysisResult.DebugPrint();
-            }
-            
+            return this.Constraints
+                    .FirstOrDefault(x => x.Key.Name == toNodeName);
         }
-
         private RdResult ConstructConstraintForStartNode(KeyValuePair<Node, IConstraints> startNodeConstraint)
         {
             RdResult result = new RdResult();
@@ -102,6 +53,79 @@ namespace Analyses.Analysis.BitVector
                 }
             }
             return result;
+        }
+
+        private RdResult ApplyKillSet(Edge edge, IConstraints constraintSet, RdResult result)
+        {
+            this.Kill(edge, constraintSet);
+            foreach (var hashSet in (constraintSet as ReachingDefinitionConstraints)
+                .VariableToPossibleAssignments)
+            {
+                result.RemoveWhere(tuple => tuple.variable.Contains(hashSet.Key));
+            }
+
+            return result;
+        }
+
+        private RdResult ApplyGenSet(Edge edge, IConstraints constraintSet, RdResult result)
+        {
+            this.Generate(edge, constraintSet);
+            foreach (var hashSet in (constraintSet as ReachingDefinitionConstraints)
+                .VariableToPossibleAssignments.Values)
+            {
+                result.UnionWith(hashSet);
+            }
+
+            return result;
+        }
+
+        private void StoreConstraintSet(Node key, RdResult constraintSet)
+        {
+            if (AnalysisResult.Keys.Contains(key))
+            {
+                RdResult valueToChange = new RdResult();
+                AnalysisResult.TryGetValue(key, out valueToChange);
+                valueToChange.UnionWith(constraintSet);
+                AnalysisResult[key] = valueToChange;
+            }
+            else
+            {
+                AnalysisResult.Add(key, constraintSet);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ConstructConstraints()
+        {
+            //Locate q_start and construct its constraints
+            String nextNode = "q_start";
+            var startNodeConstraint =
+                this.Constraints
+                    .FirstOrDefault(x => x.Key.Name == nextNode);
+            var currentConstraintSet = this.ConstructConstraintForStartNode(startNodeConstraint);
+            AnalysisResult.Add(startNodeConstraint.Key, currentConstraintSet);
+
+            //For every edge going out of each following node (//TODO: change this when nodes are numbered in order)
+            foreach (Edge edge in this._program.Edges.Where( x => x.FromNode.Name == nextNode))
+            {
+                Console.WriteLine($"Traversing edge {edge}");
+                nextNode = edge.ToNode.Name;
+                var node = this.GetNextNode(edge.ToNode.Name);
+
+                //the killRD
+                currentConstraintSet = this.ApplyKillSet(edge, node.Value, currentConstraintSet);
+                Console.WriteLine($"After killRD: {currentConstraintSet.AllToString()}");
+
+                //the genRD
+                currentConstraintSet = this.ApplyGenSet(edge, node.Value, currentConstraintSet);
+                Console.WriteLine($"After genRD: {currentConstraintSet.AllToString()}");
+
+                //store it
+                this.StoreConstraintSet(node.Key, currentConstraintSet);
+            }
+            AnalysisResult.DebugPrint();
         }
     }
 }
