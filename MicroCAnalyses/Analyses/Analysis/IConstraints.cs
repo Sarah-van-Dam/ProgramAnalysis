@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Analyses
 {
+    //TODO: make this back into interface
     public abstract class IConstraints
     {
         //TODO: this shouldn't live in the abstract class 
