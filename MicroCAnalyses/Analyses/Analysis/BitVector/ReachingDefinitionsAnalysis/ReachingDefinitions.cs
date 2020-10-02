@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Analyses.Analysis.Actions;
 using Analyses.Graph;
-using Analyses.Helpers;
 
 namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
 {

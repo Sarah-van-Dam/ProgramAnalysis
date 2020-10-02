@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Analyses.Analysis.BitVector;
-using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Graph;
 using Analyses.Helpers;
 using Action = Analyses.Analysis.Actions;

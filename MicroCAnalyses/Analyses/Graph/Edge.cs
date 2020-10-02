@@ -1,4 +1,3 @@
-using System;
 using Action = Analyses.Analysis.Actions;
 
 namespace Analyses.Graph

@@ -1,6 +1,3 @@
-using Analyses.Graph;
-using System.Collections.Generic;
-
 namespace Analyses
 {
     //TODO: make this back into interface
