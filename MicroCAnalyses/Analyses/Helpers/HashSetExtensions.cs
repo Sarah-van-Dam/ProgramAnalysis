@@ -34,17 +34,5 @@ namespace Analyses.Helpers
             str = str.Remove(str.Length - 1) + "}";
             Console.WriteLine(str);
         }
-
-        public static void DebugPrint(this Dictionary<Node, AnalysisResult<T>> analysisResult) where T:(string,string,string)
-            
-        {
-            foreach (var node in analysisResult)
-            {
-                Console.WriteLine(node.Key);
-                Console.WriteLine(node.Value.AllToString());
-            }
-        }
-
-
     }
 }
