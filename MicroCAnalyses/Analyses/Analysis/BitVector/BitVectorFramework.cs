@@ -42,7 +42,6 @@ namespace Analyses.Analysis.BitVector
         /// </summary>
         private void ConstructConstraints()
         {
-
             //Locate q_start
             String nodeName = "q_start";
             var startNodeConstraint = 
@@ -51,7 +50,7 @@ namespace Analyses.Analysis.BitVector
             startNodeConstraint.DebugPrint();
 
             //construct constraint set for q_start
-            var resultConstraints = this.ConstructConstraintForNode(startNodeConstraint);
+            var resultConstraints = this.ConstructConstraintForStartNode(startNodeConstraint);
             AnalysisResult.Add(startNodeConstraint.Key, resultConstraints);
 
             //for every edge going out of that node 
@@ -92,7 +91,7 @@ namespace Analyses.Analysis.BitVector
             
         }
 
-        private RdResult ConstructConstraintForNode(KeyValuePair<Node, IConstraints> startNodeConstraint)
+        private RdResult ConstructConstraintForStartNode(KeyValuePair<Node, IConstraints> startNodeConstraint)
         {
             RdResult result = new RdResult();
             foreach (var hashSet in (startNodeConstraint.Value as ReachingDefinitionConstraints).VariableToPossibleAssignments.Values)
