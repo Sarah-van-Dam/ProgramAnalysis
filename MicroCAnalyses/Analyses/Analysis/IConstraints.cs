@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Analyses
 {
-    public abstract class Constraints
+    public abstract class IConstraints
     {
         //TODO: this shouldn't live in the abstract class 
         public readonly Dictionary<string, HashSet<(string action, string startNode, string endNode)>>
@@ -16,7 +16,7 @@ namespace Analyses
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public abstract bool IsSubset(Constraints other);
+        public abstract bool IsSubset(IConstraints other);
   
     }
 }
