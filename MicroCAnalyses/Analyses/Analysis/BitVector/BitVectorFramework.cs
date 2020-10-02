@@ -23,11 +23,47 @@ namespace Analyses.Analysis.BitVector
             this.SolveConstraintsRoundRobin();
         }
 
+        /// <summary>
+        /// //todo: generate constraints : go through program tree and based on edges do that
+        /// </summary>
         private void ConstructConstraints()
         {
-            //todo: generate constraints : go through program tree and based on edges do that
+            Node nextNode = null;
+            //for now - do constraints as strings; afterwards -> turn them into sets
+            Dictionary<string, string> constraints = new Dictionary<string, string>();//<nodeName, nodeConstraints>
 
-
+            //Locate q_start
+            foreach (Edge edge in this._program.Edges)
+            {
+                if (edge.FromNode.Name == "q_start")
+                {
+                    //hardcode constraint {(x, ?, q_start), (y, ?, q_start)} if Var = {x,y} and Arr = {}
+                    var startNodeConstraint = this.Constraints.VariableToPossibleAssignments["x"];
+                    var startNodeConstraint2 = this.Constraints.VariableToPossibleAssignments["y"];
+                    constraints.Add("q_start", $"{startNodeConstraint}, {startNodeConstraint2}");
+                    //store next node
+                    nextNode = edge.ToNode;
+                }
+            }
+            //for every node after  q_start
+            while(true)
+            { 
+                foreach (Edge edge in this._program.Edges)
+                {
+                    if (edge.FromNode.Name == nextNode.Name)
+                    {
+                        string previousNodeConstraint = string.Empty;
+                        constraints.TryGetValue(edge.FromNode.Name, out previousNodeConstraint);
+                        
+                        constraints.Add(edge.ToNode.Name, $"Is subset of " +
+                            $"{previousNodeConstraint} minus" +
+                            $"{Kill(edge)} plus" + //TODO: change these to return values
+                            $"{Generate(edge)}");
+                        //constraintRD(edge.ToNode).IsSubsetOf(constraintRD(edge.fromNode) - killRD(edge) + genRD(edge)));
+                        nextNode = edge.ToNode;
+                    }
+                }
+            }
         }
 
 
