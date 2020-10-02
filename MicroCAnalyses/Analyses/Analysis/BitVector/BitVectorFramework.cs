@@ -48,9 +48,9 @@ namespace Analyses.Analysis.BitVector
                 if (edge.FromNode.Name == "q_start")
                 {
                     //hardcode constraint {(x, ?, q_start), (y, ?, q_start)} if Var = {x,y} and Arr = {}
-                    var startNodeConstraint = this.Constraints.VariableToPossibleAssignments["x"];
-                    var startNodeConstraint2 = this.Constraints.VariableToPossibleAssignments["y"];
-                    constraints.Add("q_start", $"{startNodeConstraint}, {startNodeConstraint2}");
+                    //var startNodeConstraint = this.Constraints.VariableToPossibleAssignments["x"];
+                    //var startNodeConstraint2 = this.Constraints.VariableToPossibleAssignments["y"];
+                    //constraints.Add("q_start", $"{startNodeConstraint}, {startNodeConstraint2}");
                     //store next node
                     nextNode = edge.ToNode;
                 }
@@ -65,10 +65,10 @@ namespace Analyses.Analysis.BitVector
                         string previousNodeConstraint = string.Empty;
                         constraints.TryGetValue(edge.FromNode.Name, out previousNodeConstraint);
 
-                        constraints.Add(edge.ToNode.Name, $"Is subset of " +
-                            $"{previousNodeConstraint} minus" +
-                            $"{Kill(edge)} plus" + //TODO: change these to return values
-                            $"{Generate(edge)}");
+                        //constraints.Add(edge.ToNode.Name, $"Is subset of " +
+                        //    $"{previousNodeConstraint} minus" +
+                        //    $"{Kill(edge)} plus" + //TODO: change these to return values
+                        //    $"{Generate(edge)}");
                         //constraintRD(edge.ToNode).IsSubsetOf(constraintRD(edge.fromNode) - killRD(edge) + genRD(edge)));
                         nextNode = edge.ToNode;
                     }
@@ -152,8 +152,8 @@ namespace Analyses.Analysis.BitVector
                 {
                     traversedEdge = outgoingEdge;
                     selectedNode = traversedEdge.ToNode;
-                    this.Kill(traversedEdge);
-                    this.Generate(traversedEdge);
+                    //this.Kill(traversedEdge);
+                    //this.Generate(traversedEdge);
 
                     //var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];
                     //iterationResult.Add(selectedNode, constraintsForNode);
