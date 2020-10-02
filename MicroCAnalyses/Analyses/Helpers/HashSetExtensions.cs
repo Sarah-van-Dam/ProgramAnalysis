@@ -35,7 +35,7 @@ namespace Analyses.Helpers
             Console.WriteLine(str);
         }
 
-        public static void DebugPrint(this Dictionary<Node, AnalysisResult<(string, string, string)>> analysisResult) 
+        public static void DebugPrint(this Dictionary<Node, AnalysisResult<T>> analysisResult) where T:(string,string,string)
             
         {
             foreach (var node in analysisResult)

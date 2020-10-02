@@ -67,7 +67,7 @@ namespace Analyses.Analysis.BitVector
                 nextNode = edge.ToNode.Name;
                 this.GenerateConstraintsForEdge(edge, nextNode, currentConstraintSet);
             }
-            AnalysisResult.DebugPrint();
+            this.DebugPrint(this.AnalysisResult);
         }
 
         private void GenerateConstraintsForEdge(Edge edge, string nextNode, AnalysisResult<T> currentConstraintSet)
@@ -88,5 +88,7 @@ namespace Analyses.Analysis.BitVector
             this.StoreConstraintSet(node.Key, newConstraintSet);
             currentConstraintSet = newConstraintSet;
         }
+
+        public abstract void DebugPrint(Dictionary<Node, AnalysisResult<T>> analysisResult);
     }
 }
