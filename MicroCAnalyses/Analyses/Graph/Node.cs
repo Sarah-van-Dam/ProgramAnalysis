@@ -48,5 +48,10 @@ namespace Analyses.Graph
             }
             return int.Parse(this.Name.Where(char.IsDigit).ToArray());
         }
+
+        public override string ToString()
+        {
+            return $"Node {this.Name}";
+        }
     }
 }
