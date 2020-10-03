@@ -87,8 +87,8 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     break;
                 default:
                     break;
-                    //throw new ArgumentOutOfRangeException(nameof(edge.Action), edge.Action,
-                    //    $"No kill set has been generated for this action: {edge.Action} ");
+                    throw new ArgumentOutOfRangeException(nameof(edge.Action), edge.Action,
+                        $"No kill set has been generated for this action: {edge.Action} ");
             }
         }
 
