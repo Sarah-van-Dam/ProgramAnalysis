@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Graph;
 using Analyses.Analysis;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xunit;
 
 namespace Analyses.Test.Integration
@@ -86,7 +85,7 @@ namespace Analyses.Test.Integration
             //Assert
 
             var result = rd.AnalysisResult;
-            Assert.AreEqual(expectedResult, result);
+            Assert.StrictEqual(expectedResult, result);
         }
     }
 }
