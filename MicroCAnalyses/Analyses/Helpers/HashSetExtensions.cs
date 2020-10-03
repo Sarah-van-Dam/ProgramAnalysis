@@ -20,7 +20,7 @@ namespace Analyses.Helpers
             }
         }
 
-        public static void DebugPrint(this KeyValuePair<Node, Constraints<(string, string, string)>>  startNodeConstraint)
+        public static void DebugPrint(this KeyValuePair<Node, IConstraints>  startNodeConstraint)
         {
             var rdConstraints = (startNodeConstraint.Value as ReachingDefinitionConstraints).VariableToPossibleAssignments;
 

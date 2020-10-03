@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Graph;
 using Analyses.Helpers;
 using Action = Analyses.Analysis.Actions;
@@ -14,8 +13,8 @@ namespace Analyses.Analysis.BitVector
     {
         protected Operator JoinOperator;
         protected Direction Direction;
-        protected Dictionary<Node, Constraints<T>> FinalConstraintsForNodes;
-        internal Dictionary<Node, Constraints<T>> Constraints
+        protected Dictionary<Node, IConstraints> FinalConstraintsForNodes;
+        internal Dictionary<Node, IConstraints> Constraints
         {
             get => FinalConstraintsForNodes;
         }
@@ -24,65 +23,30 @@ namespace Analyses.Analysis.BitVector
         protected BitVectorFramework(ProgramGraph programGraph)
         {
             _program = programGraph;
-            FinalConstraintsForNodes = new Dictionary<Node, Constraints<T>>();
+            FinalConstraintsForNodes = new Dictionary<Node, IConstraints>();
         }
-        public abstract void Kill(Edge edge, Constraints<T> constraints);
+        public abstract void Kill(Edge edge, IConstraints constraints);
 
-        public abstract void Generate(Edge edge, Constraints<T> constraints);
+        public abstract void Generate(Edge edge, IConstraints constraints);
 
         public override void Analyse()
         {
             this.SolveConstraints();
         }
 
-        private KeyValuePair<Node, Constraints<T>> GetNextNode(string toNodeName)
+        private KeyValuePair<Node, IConstraints> GetNextNode(string toNodeName)
         {
             return this.Constraints
                     .FirstOrDefault(x => x.Key.Name == toNodeName);
         }
 
-        private AnalysisResult<T> ConstructConstraintForStartNode(KeyValuePair<Node, Constraints<T>> startNodeConstraint)
-        {
-            AnalysisResult<T> result = new AnalysisResult<T>();
-            foreach (var hashSet in (startNodeConstraint.Value.Values))
-            {
-                foreach (var triple in hashSet)
-                {
-                    result.Add(triple);
-                }
-            }
-            return result;
-        }
+        public abstract AnalysisResult<T> ConstructConstraintForStartNode(KeyValuePair<Node, IConstraints> startNodeConstraint);
 
-        public abstract void ApplyKillSet(Edge edge, Constraints<T> constraintSet, AnalysisResult<T> result);
+        public abstract void ApplyKillSet(Edge edge, IConstraints constraintSet, AnalysisResult<T> result);
 
-        private void ApplyGenSet(
-            Edge edge,
-            Constraints<T> constraintSet,
-            AnalysisResult<T> result)
-        {
-            this.Generate(edge, constraintSet);
-            foreach (var hashSet in constraintSet.Values)
-            {
-                result.UnionWith(hashSet);
-            }
-        }
+        public abstract void ApplyGenSet(Edge edge, IConstraints constraintSet, AnalysisResult<T> result);
 
-        private void StoreConstraintSet(Node key, AnalysisResult<T> constraintSet)
-        {
-            Console.WriteLine($"Storing constraint set {constraintSet.AllToString()} on node {key.Name}");
-            if (this.AnalysisResult.Keys.Contains(key))
-            {
-                AnalysisResult<T> valueToChange = null;
-                AnalysisResult.TryGetValue(key, out valueToChange);
-                valueToChange.UnionWith(constraintSet);
-                AnalysisResult[key] = valueToChange;
-            }
-            else
-            {
-                AnalysisResult.Add(key, constraintSet);
-            }
-        }
+        public abstract void StoreConstraintSet(Node key, AnalysisResult<T> constraintSet);
 
         /// <summary>
         /// Locates q_start and construct its constraints;

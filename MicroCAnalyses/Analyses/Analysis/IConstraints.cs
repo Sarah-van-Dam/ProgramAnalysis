@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-
 namespace Analyses
 {
-    public abstract class Constraints<T>: Dictionary<string, HashSet<T>>
+    public interface IConstraints
     {
         /// <summary>
         /// True if current object is subset of <paramref name="other" />:
@@ -11,6 +9,6 @@ namespace Analyses
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public abstract bool IsSubset(Constraints<T> other);
+        bool IsSubset(IConstraints other);
     }
 }
