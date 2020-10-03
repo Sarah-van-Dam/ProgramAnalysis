@@ -12,7 +12,7 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
            VariableToPossibleAssignments = new Dictionary<string, HashSet<(string variable, string startNode, string endNode)>>();
         }
 
-        public override bool IsSubset(IConstraints other)
+        public virtual bool IsSubset(IConstraints other)
         {
             throw new System.NotImplementedException();
         }
