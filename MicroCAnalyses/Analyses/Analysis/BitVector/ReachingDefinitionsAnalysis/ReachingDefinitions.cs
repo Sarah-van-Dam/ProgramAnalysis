@@ -165,7 +165,10 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
             foreach (var (key, _) in (constraintSet as ReachingDefinitionConstraints)
                 .VariableToPossibleAssignments)
             {
-                result.RemoveWhere(tuple => tuple.Item1.Contains(key));
+                //only override undefined set (otherwise append)
+                result.RemoveWhere(tuple => 
+                    tuple.Item1.Contains(key) && 
+                    tuple.Item2.Contains("?"));
             }
         }
 

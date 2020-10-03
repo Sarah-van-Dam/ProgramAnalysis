@@ -61,16 +61,15 @@ namespace Analyses.Analysis.BitVector
             var currentConstraintSet = this.ConstructConstraintForStartNode(startNodeConstraint);
             AnalysisResult.Add(startNodeConstraint.Key, currentConstraintSet);
 
-            //TODO(mta): change this when nodes are numbered in order
             foreach (Edge edge in this._program.Edges.Where( x => x.FromNode.Name == nextNode))
             {
                 nextNode = edge.ToNode.Name;
-                this.GenerateConstraintsForEdge(edge, nextNode, currentConstraintSet);
+                currentConstraintSet = this.GenerateConstraintsForEdge(edge, nextNode, currentConstraintSet);
             }
             this.DebugPrint(this.AnalysisResult);
         }
 
-        private void GenerateConstraintsForEdge(Edge edge, string nextNode, AnalysisResult<T> currentConstraintSet)
+        private AnalysisResult<T> GenerateConstraintsForEdge(Edge edge, string nextNode, AnalysisResult<T> currentConstraintSet)
         {
             var newConstraintSet = new AnalysisResult<T>(currentConstraintSet);//create a copy *i hope*
             Console.WriteLine($"Traversing edge {edge}");
@@ -86,7 +85,7 @@ namespace Analyses.Analysis.BitVector
 
             //store it
             this.StoreConstraintSet(node.Key, newConstraintSet);
-            currentConstraintSet = newConstraintSet;
+            return new AnalysisResult<T>(newConstraintSet);
         }
 
         public abstract void DebugPrint(Dictionary<Node, AnalysisResult<T>> analysisResult);
