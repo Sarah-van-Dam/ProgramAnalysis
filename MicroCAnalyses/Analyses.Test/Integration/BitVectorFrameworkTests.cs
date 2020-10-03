@@ -4,10 +4,10 @@ using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Graph;
 using Analyses.Analysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Analyses.Test.Integration
 {
-    [TestClass()]
     public class BitVectorFrameworkTests
     {
         private readonly String factorial =
@@ -17,7 +17,7 @@ namespace Analyses.Test.Integration
         /// <summary>
         /// Test E2E RD analysis with a hardcoded expect
         /// </summary>
-        [TestMethod()]
+        [Fact]
         public void ReachingDefinitionsTest()
         {
             //Arrange
