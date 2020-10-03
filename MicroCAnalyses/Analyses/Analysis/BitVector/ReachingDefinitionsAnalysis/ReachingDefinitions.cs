@@ -34,7 +34,7 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
             }
         }
 
-        public override void Kill(Edge edge, IConstraints constraints)
+        public override void Kill(Edge edge, Constraints<(string, string, string)> constraints)
         {
             if (!(constraints is ReachingDefinitionConstraints rdConstraints))
             {
@@ -92,7 +92,7 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
             }
         }
 
-        public override void Generate(Edge edge, IConstraints constraints)
+        public override void Generate(Edge edge, Constraints<(string, string, string)> constraints)
         {
             if (!(constraints is ReachingDefinitionConstraints rdConstraints))
             {
@@ -158,7 +158,7 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
 
         public override void ApplyKillSet(
             Edge edge, 
-            IConstraints constraintSet, 
+            Constraints<(string, string, string)> constraintSet, 
             AnalysisResult<(string, string, string)> result)
         {
             this.Kill(edge, constraintSet);
@@ -169,20 +169,9 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
             }
         }
 
-        public override void ApplyGenSet(
-            Edge edge, 
-            IConstraints constraintSet, 
-            AnalysisResult<(string, string, string)> result)
-        {
-            this.Generate(edge, constraintSet);
-            foreach (var hashSet in (constraintSet as ReachingDefinitionConstraints)
-                .VariableToPossibleAssignments.Values)
-            {
-                result.UnionWith(hashSet);
-            }
-        }
 
-        public override AnalysisResult<(string, string, string)> ConstructConstraintForStartNode(KeyValuePair<Node, IConstraints> startNodeConstraint)
+
+        public override AnalysisResult<(string, string, string)> ConstructConstraintForStartNode(KeyValuePair<Node, Constraints<(string, string, string)>> startNodeConstraint)
         {
             AnalysisResult<(string, string, string)> result = new AnalysisResult<(string, string, string)>();
             foreach (var hashSet in (startNodeConstraint.Value as ReachingDefinitionConstraints).VariableToPossibleAssignments.Values)
@@ -195,21 +184,6 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
             return result;
         }
 
-        public override void StoreConstraintSet(Node key, AnalysisResult<(string, string, string)> constraintSet)
-        {
-            Console.WriteLine($"Storing constraint set {constraintSet.AllToString()} on node {key.Name}");
-            if (this.AnalysisResult.Keys.Contains(key))
-            {
-                AnalysisResult<(string, string, string)> valueToChange = null;
-                AnalysisResult.TryGetValue(key, out valueToChange);
-                valueToChange.UnionWith(constraintSet);
-                AnalysisResult[key] = valueToChange;
-            }
-            else
-            {
-                AnalysisResult.Add(key, constraintSet);
-            }
-        }
 
         public override void DebugPrint(Dictionary<Node, AnalysisResult<(string, string, string)>> analysisResult)
         {
