@@ -75,7 +75,6 @@ namespace Analyses.Test.Integration
                     }
                 },
             };
-        
 
             var ast = Parser.parse(factorial);
             var pg = new ProgramGraph(ast);
@@ -88,7 +87,6 @@ namespace Analyses.Test.Integration
 
             var result = rd.AnalysisResult;
             Assert.AreEqual(expectedResult, result);
-
         }
     }
 }
