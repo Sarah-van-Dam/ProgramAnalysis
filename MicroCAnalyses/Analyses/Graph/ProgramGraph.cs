@@ -19,6 +19,9 @@ namespace Analyses.Graph
         {
             AstToProgramGraph(ast);
             VariableNames = GetVariables();
+
+            LinkNodes();
+            SortNodes();
         }
 
         /// <summary>
@@ -74,6 +77,58 @@ namespace Analyses.Graph
             }
 
             return listOfVariables;
+        }
+
+        private void LinkNodes()
+        {
+            foreach (Edge edge in Edges)
+            {
+                edge.FromNode.OutGoingEdges.Add(edge);
+                edge.ToNode.InGoingEdges.Add(edge);
+            }
+        }
+
+        /// <summary>
+        /// Rebuilds the node and edge structure, while changing the node names to be ascending based on their distance to the entry node.
+        /// </summary>
+        private void SortNodes()
+        {
+            Queue<Node> queue = new Queue<Node>();
+            queue.Enqueue(Nodes.First());
+            HashSet<Node> nodes = new HashSet<Node>();
+            HashSet<Edge> edges = new HashSet<Edge>();
+            Dictionary<Node, Node> nodeMapping = new Dictionary<Node, Node>();
+
+            while (queue.Count > 0)
+            {
+                Node currentNode = queue.Dequeue();
+                if (nodeMapping.ContainsKey(currentNode)) continue; // Skip already visited nodes.
+
+                IEnumerable<Node> childNodes = currentNode.OutGoingEdges.Select(edge => edge.ToNode);
+                foreach (Node childNode in childNodes)
+                    queue.Enqueue(childNode);
+
+                if (currentNode.Name == StartNode)
+                    nodeMapping[currentNode] = new Node(StartNode);
+                else if (currentNode.Name == EndNode)
+                    continue; // Skip the end node to force it to after the while-loop.
+                else
+                    nodeMapping[currentNode] = new Node(NodePrefix + nodeMapping.Keys.Count);
+            }
+            nodeMapping[Nodes.Last()] = new Node(EndNode);
+
+            foreach (Edge edge in Edges)
+            {
+                Edge newEdge = new Edge(nodeMapping[edge.FromNode], edge.Action, nodeMapping[edge.ToNode]);
+                edges.Add(newEdge);
+            }
+
+            foreach (Node newNode in nodeMapping.Values)
+                nodes.Add(newNode);
+
+            Nodes = nodes;
+            Edges = edges;
+            LinkNodes();
         }
 
         private void AstToProgramGraph(MicroCTypes.expressionTree ast)
