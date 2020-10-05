@@ -21,8 +21,14 @@ jobs:
         dotnet-version: 3.1.301
     
     - name: Install dependencies
-      run: dotnet restore
+      run: | 
+        cd MicroCAnalyses 
+        dotnet restore
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: | 
+        cd MicroCAnalyses
+        dotnet build --configuration Release --no-restore
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: | 
+        cd MicroCAnalyses
+        dotnet test --no-restore --verbosity normal
