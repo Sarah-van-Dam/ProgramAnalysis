@@ -45,8 +45,8 @@ rule tokenize = parse
 | "true"        { TRUE }
 | "false"       { FALSE }
 | "int"         { INTDECLARE }
-| ".fst"        { FST }
-| ".snd"        { SND }
+| "fst"         { FST }
+| "snd"         { SND }
 | ","           { COMMA }
 | "."           { DOT }
 | "{"           { CURLYSTART }

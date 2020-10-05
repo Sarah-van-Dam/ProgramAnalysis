@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
 {
@@ -11,6 +10,11 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
         public ReachingDefinitionConstraints()
         {
            VariableToPossibleAssignments = new Dictionary<string, HashSet<(string variable, string startNode, string endNode)>>();
+        }
+
+        public virtual bool IsSubset(IConstraints other)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

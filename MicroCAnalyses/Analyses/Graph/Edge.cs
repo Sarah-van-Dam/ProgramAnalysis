@@ -1,4 +1,3 @@
-using System;
 using Action = Analyses.Analysis.Actions;
 
 namespace Analyses.Graph
@@ -15,5 +14,14 @@ namespace Analyses.Graph
             ToNode = toNode;
             Action = action;
         }
+
+        public string ToSyntax()
+            => $"({FromNode.Name}, {Action.ToSyntax()}, {ToNode.Name})";
+
+        public override string ToString()
+        {
+            return $"Edge with action type {this.Action.ToString()} from {FromNode} to {ToNode}";
+        }
+
     }
 }
