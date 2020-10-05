@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Analyses.Graph;
+using Analyses.Helpers;
 using Action = Analyses.Analysis.Actions;
 
 [assembly: InternalsVisibleTo("Analyses.Test")]
 namespace Analyses.Analysis.BitVector
 {
-    public abstract class BitVectorFramework : Analysis
+    public abstract class BitVectorFramework<T> : Analysis
     {
         protected Operator JoinOperator;
         protected Direction Direction;
@@ -16,6 +18,7 @@ namespace Analyses.Analysis.BitVector
         {
             get => FinalConstraintsForNodes;
         }
+        internal Dictionary<Node, AnalysisResult<T>> AnalysisResult = new Dictionary<Node, AnalysisResult<T>>();
 
         protected BitVectorFramework(ProgramGraph programGraph)
         {
@@ -31,94 +34,60 @@ namespace Analyses.Analysis.BitVector
             this.SolveConstraints();
         }
 
-        private void BuildConstraintForEdge(Edge edge)
+        private KeyValuePair<Node, IConstraints> GetNextNode(string toNodeName)
         {
+            return this.Constraints
+                    .FirstOrDefault(x => x.Key.Name == toNodeName);
         }
 
+        public abstract AnalysisResult<T> ConstructConstraintForStartNode(KeyValuePair<Node, IConstraints> startNodeConstraint);
 
-        private void ApplyOperator(
-            HashSet<(string action, string startNode, string endNode)> constraint)
-        {
-            //extract left and right constraint
-            (string action, string startNode, string endNode) leftConstraint = ("", "", "");
-            (string action, string startNode, string endNode) rightConstraint = ("", "", "");
+        public abstract void ApplyKillSet(Edge edge, IConstraints constraintSet, AnalysisResult<T> result);
 
+        public abstract void ApplyGenSet(Edge edge, IConstraints constraintSet, AnalysisResult<T> result);
 
-            if (this.JoinOperator == Operator.Union)
-            {
-                //leftConstraint.UnionWith(rightConstraint);
-            }
-            else if (this.JoinOperator == Operator.Intersection)
-            {
-                //leftConstraint.IntersectWith(rightConstraint);
-            }
-            else
-            {
-                throw new SystemException("Illegal constraint operator");
-            }
-
-            //return leftConstraint;
-        }
-
-        private void SolveConstraints()
-        {
-            var programGraph = this._program; //DEBUG 
-            var previousRd = "";
-
-            foreach (Edge currentEdge in programGraph.Edges)
-            {
-                Console.WriteLine(
-                    $"Traversing edge {currentEdge.Action} " +
-                    $"from node {currentEdge.FromNode.Name} " +
-                    $"to node {currentEdge.ToNode.Name}");
-            }
-        }
+        public abstract void StoreConstraintSet(Node key, AnalysisResult<T> constraintSet);
 
         /// <summary>
-        /// Worklist algorithm;
-        /// For each edge, evaluate all nodes and update the finalConstraintsForNodes 
-        /// with the changes from the edge.
+        /// Locates q_start and construct its constraints;
+        /// Afterwards for each node traverses every edge and constructs additional constraints
         /// </summary>
-        private void SolveConstraintsRoundRobin()
+        private void SolveConstraints()
         {
-            var programGraph = this._program; //DEBUG 
+            String nextNode = "q_start";
+            var startNodeConstraint =
+                this.Constraints
+                    .FirstOrDefault(x => x.Key.Name == nextNode);
+            var currentConstraintSet = this.ConstructConstraintForStartNode(startNodeConstraint);
+            AnalysisResult.Add(startNodeConstraint.Key, currentConstraintSet);
 
-            bool extraRoundNeeded = true;
-            int step = 0;
-            Edge traversedEdge = null;
-            //Node selectedNode = programGraph.Nodes.First(); - not supported by hashsets
-            Node selectedNode = null;
-
-            Dictionary<Node, HashSet<(string, string, string)>> result =
-                new Dictionary<Node, HashSet<(string, string, string)>>();
-            Dictionary<Node, HashSet<(string, string, string)>> iterationResult =
-                new Dictionary<Node, HashSet<(string, string, string)>>();
-
-            while (extraRoundNeeded)
+            foreach (Edge edge in this._program.Edges.Where( x => x.FromNode.Name == nextNode))
             {
-                foreach (Edge outgoingEdge in programGraph.Edges)
-                {
-                    traversedEdge = outgoingEdge;
-                    selectedNode = traversedEdge.ToNode;
-                    this.Kill(traversedEdge);
-                    this.Generate(traversedEdge);
-
-                    var constraintsForNode = Constraints.VariableToPossibleAssignments[selectedNode.Name];
-                    iterationResult.Add(selectedNode, constraintsForNode);
-
-
-                    step++;
-                }
-
-                if (iterationResult != result)
-                {
-                    result = iterationResult;
-                }
-                else // entire traversal has given rise to no changes
-                {
-                    extraRoundNeeded = false;
-                }
+                nextNode = edge.ToNode.Name;
+                currentConstraintSet = this.GenerateConstraintsForEdge(edge, nextNode, currentConstraintSet);
             }
+            this.DebugPrint(this.AnalysisResult);
         }
+
+        private AnalysisResult<T> GenerateConstraintsForEdge(Edge edge, string nextNode, AnalysisResult<T> currentConstraintSet)
+        {
+            var newConstraintSet = new AnalysisResult<T>(currentConstraintSet);//create a copy *i hope*
+            Console.WriteLine($"Traversing edge {edge}");
+            var node = this.GetNextNode(nextNode);
+
+            //the killRD
+            this.ApplyKillSet(edge, node.Value, newConstraintSet);
+            //Console.WriteLine($"After killRD: {newConstraintSet.AllToString()}");
+
+            //the genRD
+            this.ApplyGenSet(edge, node.Value, newConstraintSet);
+            //Console.WriteLine($"After genRD: {newConstraintSet.AllToString()}");
+
+            //store it
+            this.StoreConstraintSet(node.Key, newConstraintSet);
+            return new AnalysisResult<T>(newConstraintSet);
+        }
+
+        public abstract void DebugPrint(Dictionary<Node, AnalysisResult<T>> analysisResult);
     }
 }

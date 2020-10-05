@@ -15,3 +15,10 @@ MicroCAnalyses/.vs/MicroCAnalyses/xs/UserPrefs.xml
 /MicroCAnalyses/.vs/MicroCAnalyses
 
 MicroCAnalyses/Parser/MicroCParser.fsi
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates

@@ -1,13 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Analyses.Analysis.Actions;
-using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
-using Analyses.Graph;
 using Xunit;
 
-namespace Analyses.Test.Analysis.ProgramGraph
+namespace Analyses.Test.Analysis.ProgramGraphTest
 {
     public class AstToProgramGraphTest
     {
