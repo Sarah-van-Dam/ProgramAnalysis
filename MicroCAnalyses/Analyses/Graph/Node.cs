@@ -13,7 +13,7 @@ namespace Analyses.Graph
         public Node(string name)
         {
             Name = name;
-            Index = this.ParseNameToIndex();
+            Index = ParseNameToIndex();
             InGoingEdges = new HashSet<Edge>();
             OutGoingEdges = new HashSet<Edge>();
         }
@@ -36,20 +36,20 @@ namespace Analyses.Graph
 
         private int ParseNameToIndex()
         {
-            if (this.Name == "q_start")
+            if (Name == "q_start")
             {
                 return 0;
             }
-            if (this.Name == "q_end")
+            if (Name == "q_end")
             {
-                return 999; //TODO: fix me - this will break for larger programs
+                return -1;
             }
-            return int.Parse(this.Name.Where(char.IsDigit).ToArray());
+            return int.Parse(Name.Where(char.IsDigit).ToArray());
         }
 
         public override string ToString()
         {
-            return $"Node {this.Name}";
+            return $"Node {Name}";
         }
     }
 }
