@@ -76,8 +76,11 @@ statement:
     | VAR ARRAYDECLARESTART aExpr ARRAYDECLAREEND ASSIGN aExpr SEMI { AssignArray($1,$3,$6)}
     | VAR DOT FST ASSIGN aExpr SEMI { AssignRecordMember($1,$5,1)}
     | VAR DOT SND ASSIGN aExpr SEMI { AssignRecordMember($1,$5,2)}
-    | READ VAR SEMI         {Read($2)}
-    | WRITE VAR SEMI        {Write($2)}
+    | READ VAR SEMI         {ReadVariable($2)}
+    | READ VAR ARRAYDECLARESTART aExpr ARRAYDECLAREEND SEMI {ReadArray($2, $4)}
+    | READ VAR DOT FST SEMI {ReadRecordMember($2, 1)}
+    | READ VAR DOT FST SEMI {ReadRecordMember($2, 2)}
+    | WRITE aExpr SEMI        {Write($2)}
     | WHILE LPAR bExpr RPAR CURLYSTART statement CURLYEND { While($3, $6) }
     | IF LPAR bExpr RPAR CURLYSTART statement CURLYEND %prec IF { If($3, $6) } 
     | IF LPAR bExpr RPAR CURLYSTART statement CURLYEND ELSE CURLYSTART statement CURLYEND %prec ELSE { IfElse($3, $6, $10) }

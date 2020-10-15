@@ -3,7 +3,7 @@ namespace Analyses.Analysis.Actions
     public class IntAssignment : Action
     {
         public string VariableName { get; set; }
-        public string RightHandSide { get; set; }
+        public MicroCTypes.arithmeticExpression RightHandSide { get; set; }
 
         public override string ToSyntax()
             => $"{VariableName} := {RightHandSide};";

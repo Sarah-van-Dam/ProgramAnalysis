@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Analyses.Analysis.Actions;
@@ -113,6 +114,7 @@ namespace Analyses.Graph
                 else
                     nodeMapping[currentNode] = new Node(NodePrefix + nodeMapping.Keys.Count);
             }
+
             nodeMapping[Nodes.Last()] = new Node(EndNode);
 
             foreach (Edge edge in Edges)
@@ -198,7 +200,7 @@ namespace Analyses.Graph
                     e = new Edge(qBeforeStmt, new IntAssignment
                     {
                         VariableName = assignment.Item1,
-                        RightHandSide = AstToString(assignment.Item2)
+                        RightHandSide = assignment.Item2
                     }, qAfterStmt);
                     Edges.Add(e);
                     break;
@@ -206,8 +208,8 @@ namespace Analyses.Graph
                     e = new Edge(qBeforeStmt, new ArrayAssignment()
                     {
                         ArrayName = arrayAssignment.Item1,
-                        Index = AstToString(arrayAssignment.Item2),
-                        RightHandSide = AstToString(arrayAssignment.Item2)
+                        Index = arrayAssignment.Item2,
+                        RightHandSide = arrayAssignment.Item3
                     }, qAfterStmt);
                     Edges.Add(e);
                     break;
@@ -216,7 +218,7 @@ namespace Analyses.Graph
                     {
                         RecordName = recordEntryAssignment.Item1,
                         RecordMember = recordEntryAssignment.Item3 == 1 ? RecordMember.Fst : RecordMember.Snd,
-                        RightHandSide = AstToString(recordEntryAssignment.Item2)
+                        RightHandSide = recordEntryAssignment.Item2
                     }, qAfterStmt);
                     Edges.Add(e);
                     break;
@@ -224,8 +226,8 @@ namespace Analyses.Graph
                     e = new Edge(qBeforeStmt, new RecordAssignment()
                     {
                         RecordName = recordAssignment.Item1,
-                        FirstExpression = AstToString(recordAssignment.Item2),
-                        SecondExpression = AstToString(recordAssignment.Item3)
+                        FirstExpression = recordAssignment.Item2,
+                        SecondExpression = recordAssignment.Item3
                     }, qAfterStmt);
                     Edges.Add(e);
                     break;
@@ -235,15 +237,28 @@ namespace Analyses.Graph
                 case MicroCTypes.statement.IfElse ifElse:
                     AstToProgramGraph(ifElse, qBeforeStmt, qAfterStmt);
                     break;
-                case MicroCTypes.statement.Read read:
+                case MicroCTypes.statement.ReadVariable read:
                     e = new Edge(qBeforeStmt, new ReadVariable() {VariableName = read.Item}, qAfterStmt);
+                    Edges.Add(e);
+                    break;
+                case MicroCTypes.statement.ReadArray read:
+                    e = new Edge(qBeforeStmt, new ReadArray() {ArrayName = read.Item1, Index = read.Item2}, qAfterStmt);
+                    Edges.Add(e);
+                    break;
+                case MicroCTypes.statement.ReadRecordMember read:
+                    e = new Edge(qBeforeStmt,
+                        new ReadRecordMember()
+                        {
+                            RecordName = read.Item1,
+                            RecordMember = read.Item2 == 1 ? RecordMember.Fst : RecordMember.Snd
+                        }, qAfterStmt);
                     Edges.Add(e);
                     break;
                 case MicroCTypes.statement.While @while:
                     AstToProgramGraph(@while, qBeforeStmt, qAfterStmt);
                     break;
                 case MicroCTypes.statement.Write write:
-                    e = new Edge(qBeforeStmt, new Write() {VariableName = write.Item}, qAfterStmt);
+                    e = new Edge(qBeforeStmt, new Write() {Expression = write.Item}, qAfterStmt);
                     Edges.Add(e);
                     break;
                 case MicroCTypes.statement.ContinuedStatement c:
@@ -259,10 +274,12 @@ namespace Analyses.Graph
         {
             Node qFresh = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh);
-            Edge edge1 = new Edge(qBeforeIf, new Condition() {Cond = AstToString(@if.Item1)}, qFresh);
+            Edge edge1 = new Edge(qBeforeIf,
+                new Condition() {Cond = @if.Item1, GraphvizSyntax = AstToString(@if.Item1)}, qFresh);
             Edges.Add(edge1);
             AstToProgramGraph(@if.Item2, qFresh, qAfterIf);
-            Edge edge2 = new Edge(qBeforeIf, new Condition() {Cond = $"!({AstToString(@if.Item1)})"}, qAfterIf);
+            Edge edge2 = new Edge(qBeforeIf,
+                new Condition() {Cond = @if.Item1, GraphvizSyntax = $"!({AstToString(@if.Item1)})"}, qAfterIf);
             Edges.Add(edge2);
         }
 
@@ -270,12 +287,14 @@ namespace Analyses.Graph
         {
             Node qFresh1 = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh1);
-            Edge edge1 = new Edge(qBeforeIfE, new Condition() {Cond = AstToString(ifElse.Item1)}, qFresh1);
+            Edge edge1 = new Edge(qBeforeIfE,
+                new Condition() {Cond = ifElse.Item1, GraphvizSyntax = AstToString(ifElse.Item1)}, qFresh1);
             Edges.Add(edge1);
             AstToProgramGraph(ifElse.Item2, qFresh1, qAfterIfE);
             Node qFresh2 = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh2);
-            Edge edge2 = new Edge(qBeforeIfE, new Condition() {Cond = $"!({AstToString(ifElse.Item1)})"}, qFresh2);
+            Edge edge2 = new Edge(qBeforeIfE,
+                new Condition() {Cond = ifElse.Item1, GraphvizSyntax = $"!({AstToString(ifElse.Item1)})"}, qFresh2);
             Edges.Add(edge2);
             AstToProgramGraph(ifElse.Item3, qFresh2, qAfterIfE);
         }
@@ -284,10 +303,12 @@ namespace Analyses.Graph
         {
             Node qFresh = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh);
-            Edge edge1 = new Edge(qBeforeWhile, new Condition() {Cond = AstToString(@while.Item1)}, qFresh);
+            Edge edge1 = new Edge(qBeforeWhile,
+                new Condition() {Cond = @while.Item1, GraphvizSyntax = AstToString(@while.Item1)}, qFresh);
             Edges.Add(edge1);
             AstToProgramGraph(@while.Item2, qFresh, qBeforeWhile);
-            Edge edge2 = new Edge(qBeforeWhile, new Condition() {Cond = $"!({AstToString(@while.Item1)})"},
+            Edge edge2 = new Edge(qBeforeWhile,
+                new Condition() {Cond = @while.Item1, GraphvizSyntax = $"!({AstToString(@while.Item1)})"},
                 qAfterWhile);
             Edges.Add(edge2);
         }

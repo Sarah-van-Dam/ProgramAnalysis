@@ -3,8 +3,8 @@ namespace Analyses.Analysis.Actions
     public class RecordAssignment : Action
     {
         public string RecordName { get; set; }
-        public string FirstExpression { get; set; }
-        public string SecondExpression { get; set; }
+        public MicroCTypes.arithmeticExpression FirstExpression { get; set; }
+        public MicroCTypes.arithmeticExpression SecondExpression { get; set; }
 
         public override string ToSyntax()
             => $"{RecordName} := ({FirstExpression}, {SecondExpression});";
