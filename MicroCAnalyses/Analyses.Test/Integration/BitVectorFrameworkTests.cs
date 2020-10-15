@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Analyses.Analysis.BitVector.LiveVariablesAnalysis;
 using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Graph;
 using Xunit;
@@ -8,6 +9,9 @@ namespace Analyses.Test.Integration
     public class BitVectorFrameworkTests
     {
         private const string Factorial = "int y; int x; y :=1; x :=5; while (x > 1) { y := x * y; x := x - 1; } x := 0;";
+        private const string Fibonacci = "int f1; int f2; int input; int current; f1:=1; f2:=1; read input; " +
+                                          "if( input == 0 | input == 1) { current := 1; } while ( input > 1) " +
+                                          "{ current := f1 + f2; f2:=f1; f1:= current; input := input - 1; } write current;";
         
         /// <summary>
         /// Test E2E RD analysis with a hardcoded expect
@@ -115,6 +119,140 @@ namespace Analyses.Test.Integration
             foreach (var (key, expectedConstraint) in expectedResult)
             {
                 Assert.Equal(expectedConstraint,rd.FinalConstraintsForNodes[key] );
+            }
+        }
+        
+        [Fact]
+        public void LiveVariablesTest()
+        {
+            var expectedResult = new Dictionary<Node, LiveVariableConstraint>()
+            {
+                {
+                    new Node("q_start"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { }
+                    }
+                },
+                {
+                    new Node("q1"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { }
+                    }
+                },
+                {
+                    new Node("q2"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { }
+                    }  
+                },
+                {
+                    new Node("q3"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { }
+                    }
+                },
+                {
+                    new Node("q4"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "current" }
+                    }
+                },
+                {
+                    new Node("q5"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "current", "f1" }
+                    }
+                },
+                {
+                    new Node("q6"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "current", "f1", "f2" }
+                    }
+                },
+                {
+                    new Node("q7"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "current", "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q8"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q9"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "current", "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q10"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q11"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "current" }
+                    }
+                },
+                {
+                    new Node("q12"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "current", "input", "f1" }
+                    }
+                },
+                {
+                    new Node("q13"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "current", "input", "f2" }
+                    }
+                },
+                {
+                    new Node("q14"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { "current", "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q_end"),
+                    new LiveVariableConstraint() 
+                    {
+                        LiveVariables = new HashSet<string>() { }
+                    }
+                },
+            };
+            
+            var ast = Parser.parse(Fibonacci);
+            var pg = new ProgramGraph(ast);
+            var live = new LiveVariables(pg);
+            
+            //Act
+            live.Analyse();
+
+            //Assert
+            Assert.Equal(expectedResult.Keys, live.FinalConstraintsForNodes.Keys);
+            foreach (var (key, expectedConstraint) in expectedResult)
+            {
+                Assert.Equal(expectedConstraint,live.FinalConstraintsForNodes[key]);
             }
         }
     }

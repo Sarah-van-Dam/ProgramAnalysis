@@ -6,7 +6,7 @@ namespace Analyses.Analysis.BitVector.LiveVariablesAnalysis
 {
     public class LiveVariableConstraint : IConstraints
     {
-        public HashSet<string> LiveVariables { get; }
+        public HashSet<string> LiveVariables { get; set; }
 
         public LiveVariableConstraint()
         {
