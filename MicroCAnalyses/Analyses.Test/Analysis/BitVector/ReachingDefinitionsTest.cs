@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Analyses.Analysis.Actions;
 using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
@@ -43,7 +42,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis.InitializeConstraints();
 
             //If it is record declaration there will be two results, otherwise one.
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
             var originalSize = constraint.VariableToPossibleAssignments.Count;
             var defaultConstraints = new HashSet<(string, string, string)>();
             if (originalSize == 1)
@@ -93,7 +92,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {"x"},
                 _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
 
             _analysis.Kill(edge, constraint);
 
@@ -115,7 +114,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {"R.Fst", "R.Snd"},
                 _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
             var originalSndConstraint =
                 constraint.VariableToPossibleAssignments.Single(v => v.Key == "R.Snd").Value;
 
@@ -142,7 +141,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {"R.Fst", "R.Snd"},
                 _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
 
             _analysis.Kill(edge, constraint);
 
@@ -166,7 +165,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {SingleVariableName},
                 _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
 
             _analysis.Generate(edge, constraint);
@@ -191,7 +190,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {arrayName},
                 _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
             GivenArrayHasBeenDeclared(arrayName, _defaultNodes[0].Name, _defaultNodes[1].Name, constraint);
 
             _analysis.Generate(edge, constraint);
@@ -218,7 +217,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(
                 new HashSet<string> {recordFirst, recordSecond}, _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
 
             _analysis.Generate(edge, constraint);
@@ -259,7 +258,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(
                 new HashSet<string> {recordFirst, recordSecond}, _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
 
             _analysis.Generate(edge, constraint);
@@ -300,7 +299,7 @@ namespace Analyses.Test.Analysis.BitVector
                 new HashSet<string> {recordFirst, recordSecond}, _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
 
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
 
             _analysis.Generate(edge, constraint);
@@ -335,7 +334,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {SingleVariableName},
                 _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
 
             _analysis.Generate(edge, constraint);
@@ -358,7 +357,7 @@ namespace Analyses.Test.Analysis.BitVector
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {arrayName},
                 _defaultNodes.ToHashSet(), new HashSet<Edge> {edge}));
             _analysis.InitializeConstraints();
-            var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
+            var constraint = _analysis.FinalConstraintsForNodes[_defaultNodes[0]] as ReachingDefinitionConstraints;
             GivenArrayHasBeenDeclared(arrayName, _defaultNodes[0].Name, _defaultNodes[1].Name, constraint);
             _analysis.Kill(edge, constraint);
 

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -13,10 +12,6 @@ namespace Analyses.Analysis.BitVector
         protected Operator JoinOperator;
         protected Direction Direction;
         public readonly Dictionary<Node, IConstraints> FinalConstraintsForNodes;
-        internal Dictionary<Node, IConstraints> Constraints
-        {
-            get => FinalConstraintsForNodes;
-        }
 
         protected BitVectorFramework(ProgramGraph programGraph)
         {
@@ -34,7 +29,7 @@ namespace Analyses.Analysis.BitVector
 
         private KeyValuePair<Node, IConstraints> GetConstraintsOfNode(string toNodeName)
         {
-            return Constraints
+            return FinalConstraintsForNodes
                     .Single(x => x.Key.Name == toNodeName);
         }
 
@@ -49,7 +44,6 @@ namespace Analyses.Analysis.BitVector
         {
             InitializeConstraints();
             var isForward = Direction == Direction.Forward;
-            var firstNode = isForward ?  ProgramGraph.StartNode : ProgramGraph.EndNode;
 
             var orderedEdgesList = OrderEdgesByDirection(isForward);
             var edgesThatWasUpdated = 0;
@@ -93,29 +87,33 @@ namespace Analyses.Analysis.BitVector
         {
             var edgesList = new List<Edge>();
             var nodeList = _program.Nodes.ToList();
-            if (isForward)
+            nodeList.Sort((first, second) =>
             {
-                nodeList.Sort((first, second) =>
+                if (first.Name == ProgramGraph.EndNode)
                 {
-                    if (first.Name == ProgramGraph.EndNode)
+                    return int.MaxValue;
+                }
+
+                return first.Index - second.Index;
+            });
+            foreach (var node in nodeList)
+            {
+                var edges = _program.Edges.Where(e => e.FromNode.Equals(node)).ToList();
+                edges.Sort((first, second) =>
+                {
+                    if (second.ToNode.Name == ProgramGraph.EndNode)
                     {
                         return int.MaxValue;
                     }
-                    return first.Index - second.Index;
+
+                    return first.ToNode.Index - second.ToNode.Index;
                 });
-                foreach (var node in nodeList)
-                {
-                    var edges = _program.Edges.Where(e => e.FromNode.Equals(node)).ToList();
-                    edges.Sort((first, second) =>
-                    {
-                        if (second.ToNode.Name == ProgramGraph.EndNode)
-                        {
-                            return int.MaxValue;
-                        }
-                        return first.ToNode.Index - second.ToNode.Index;
-                    });
-                    edgesList.AddRange(edges);
-                }
+                edgesList.AddRange(edges);
+            }
+
+            if (!isForward)
+            {
+                edgesList.Reverse();
             }
 
             return edgesList;
@@ -164,23 +162,6 @@ namespace Analyses.Analysis.BitVector
             Kill(edge, inMemConstraint);
             Generate(edge, inMemConstraint);
             return inMemConstraint;
-        }
-
-        /// <summary>
-        /// Take the edges in the order giving by the direction of the first node.
-        /// </summary>
-        /// <param name="nodeName"></param>
-        /// <returns></returns>
-        private Func<Edge, bool> InDirection(string nodeName)
-        {
-            return (edge) =>
-            {
-                if (Direction == Direction.Forward)
-                {
-                    return edge.FromNode.Name == nodeName;
-                }
-                return edge.ToNode.Name == nodeName;
-            };
         }
     }
 }
