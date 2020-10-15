@@ -37,7 +37,8 @@ namespace Analyses.Test.Analysis.BitVector
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(variableNames, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge}));
-
+            _analysis.InitializeConstraints();
+            
             //If it is record declaration there will be two results, otherwise one.
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             var originalSize = constraint.VariableToPossibleAssignments.Count;
@@ -79,10 +80,11 @@ namespace Analyses.Test.Analysis.BitVector
         [Fact]
         public void TestKillOnVariableAssignmentKillsDefaultConstraint()
         {
-            var edge = new Edge(null, new IntAssignment{VariableName = "x",RightHandSide = "2+1"}, null);
+            var edge = new Edge(new Node("q_start"), new IntAssignment{VariableName = "x",RightHandSide = "2+1"}, new Node("q_end"));
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"x"}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));    
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"x"}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));   
+            _analysis.InitializeConstraints();
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             
             _analysis.Kill(edge, constraint);
@@ -95,12 +97,13 @@ namespace Analyses.Test.Analysis.BitVector
         [Fact]
         public void TestKillOnRecordMemberAssignmentKillsDefaultConstraintOfMember()
         {
-            var edge = new Edge(null,
+            var edge = new Edge(new Node("q_start"),
                 new RecordMemberAssignment {RecordName = "R", RecordMember = RecordMember.Fst, RightHandSide = "2+1"},
-                null);
+                new Node("q_end"));
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
-            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"R.Fst", "R.Snd"}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));    
+            _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"R.Fst", "R.Snd"}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));   
+            _analysis.InitializeConstraints();
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             var originalSndConstraint =
                 constraint.VariableToPossibleAssignments.Single(v => v.Key == "R.Snd").Value;
@@ -115,11 +118,12 @@ namespace Analyses.Test.Analysis.BitVector
         [Fact]
         public void TestKillOnRecordAssignmentKillsDefaultConstraints()
         {
-            var edge = new Edge(null,
-                new RecordAssignment {RecordName = "R", FirstExpression = "2+1", SecondExpression = "1+2"}, null);
+            var edge = new Edge(new Node("q_start"), 
+                new RecordAssignment {RecordName = "R", FirstExpression = "2+1", SecondExpression = "1+2"}, new Node("q_end"));
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{"R.Fst", "R.Snd"}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));    
+            _analysis.InitializeConstraints();
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             
             _analysis.Kill(edge, constraint);
@@ -138,6 +142,7 @@ namespace Analyses.Test.Analysis.BitVector
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{SingleVariableName}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));    
+            _analysis.InitializeConstraints();
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
             
@@ -159,6 +164,7 @@ namespace Analyses.Test.Analysis.BitVector
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string>{arrayName}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            _analysis.InitializeConstraints();
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             GivenArrayHasBeenDeclared(arrayName, _defaultNodes[0].Name, _defaultNodes[1].Name, constraint);
 
@@ -183,6 +189,7 @@ namespace Analyses.Test.Analysis.BitVector
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {recordFirst, recordSecond}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            _analysis.InitializeConstraints();
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
             
@@ -220,6 +227,7 @@ namespace Analyses.Test.Analysis.BitVector
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {recordFirst, recordSecond}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            _analysis.InitializeConstraints();
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
 
@@ -257,6 +265,8 @@ namespace Analyses.Test.Analysis.BitVector
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {recordFirst, recordSecond}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            _analysis.InitializeConstraints();
+            
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
 
@@ -290,6 +300,7 @@ namespace Analyses.Test.Analysis.BitVector
             _defaultNodes[0].OutGoingEdges.Add(edge);
             _defaultNodes[1].InGoingEdges.Add(edge);
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {SingleVariableName}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            _analysis.InitializeConstraints();
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             _analysis.Kill(edge, constraint);
 
@@ -311,6 +322,7 @@ namespace Analyses.Test.Analysis.BitVector
             _defaultNodes[1].OutGoingEdges.Add(edge);
             _defaultNodes[2].InGoingEdges.Add(edge);
             _analysis = new ReachingDefinitions(GenerateStandardProgramGraph(new HashSet<string> {arrayName}, _defaultNodes.ToHashSet(),new HashSet<Edge>{edge} ));
+            _analysis.InitializeConstraints();
             var constraint = _analysis.Constraints[_defaultNodes[0]] as ReachingDefinitionConstraints;
             GivenArrayHasBeenDeclared(arrayName, _defaultNodes[0].Name, _defaultNodes[1].Name, constraint);
             _analysis.Kill(edge, constraint);
@@ -326,10 +338,10 @@ namespace Analyses.Test.Analysis.BitVector
 
         public static IEnumerable<object[]> EmptyKillSetActions()
         {
-            yield return new object[] {"A", new Edge(null, new ArrayAssignment {ArrayName = "A", Index = "a",RightHandSide = "a+b"}, null)};
-            yield return new object[] {"x", new Edge(null, new IntDeclaration {VariableName = "x"}, null)};
-            yield return new object[] {"x", new Edge(null, new Write{VariableName = "x"}, null) };
-            yield return new object[] {"R", new Edge(null, new RecordDeclaration{VariableName = "R"}, null) };
+            yield return new object[] {"A", new Edge(new Node("q_start"), new ArrayAssignment {ArrayName = "A", Index = "a",RightHandSide = "a+b"}, new Node("q_end"))};
+            yield return new object[] {"x", new Edge(new Node("q_start"), new IntDeclaration {VariableName = "x"}, new Node("q_end"))};
+            yield return new object[] {"x", new Edge(new Node("q_start"), new Write{VariableName = "x"}, new Node("q_end")) };
+            yield return new object[] {"R", new Edge(new Node("q_start"), new RecordDeclaration{VariableName = "R"}, new Node("q_end")) };
         }
         
         
