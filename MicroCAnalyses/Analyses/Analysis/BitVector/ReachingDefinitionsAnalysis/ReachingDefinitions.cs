@@ -49,6 +49,9 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     rdConstraints.VariableToPossibleAssignments[arrayDeclaration.ArrayName] =
                         new HashSet<(string variable, string startNode, string endNode)>();
                     break;
+                case Condition condition:
+                    //A condition cannot kill anything
+                    break;
                 case RecordDeclaration recordDeclaration:
                     // A declaration cannot kill anything
                     break;
@@ -86,7 +89,6 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     // A write cannot kill anything
                     break;
                 default:
-                    break;
                     throw new ArgumentOutOfRangeException(nameof(edge.Action), edge.Action,
                         $"No kill set has been generated for this action: {edge.Action} ");
             }
@@ -106,6 +108,9 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                 case ArrayDeclaration arrayDeclaration:
                     rdConstraints.VariableToPossibleAssignments[arrayDeclaration.ArrayName].Add((
                         arrayDeclaration.ArrayName, edge.FromNode.Name, edge.ToNode.Name));
+                    break;
+                case Condition condition:
+                    // A condition cannot generate anything
                     break;
                 case RecordDeclaration recordDeclaration:
                     // A declaration cannot generate anything
