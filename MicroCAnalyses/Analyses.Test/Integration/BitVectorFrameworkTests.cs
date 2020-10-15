@@ -9,8 +9,7 @@ namespace Analyses.Test.Integration
 {
     public class BitVectorFrameworkTests
     {
-        private readonly String factorial =
-            "int y; int x; y :=1; x :=5; while (x > 1) { y := x * y; x := x - 1; } x := 0;";
+        private const string Factorial = "int y; int x; y :=1; x :=5; while (x > 1) { y := x * y; x := x - 1; } x := 0;";
 
 
         /// <summary>
@@ -75,7 +74,7 @@ namespace Analyses.Test.Integration
                 },
             };
 
-            var ast = Parser.parse(factorial);
+            var ast = Parser.parse(Factorial);
             var pg = new ProgramGraph(ast);
             var rd = new ReachingDefinitions(pg);
             

@@ -12,9 +12,34 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
            VariableToPossibleAssignments = new Dictionary<string, HashSet<(string variable, string startNode, string endNode)>>();
         }
 
-        public virtual bool IsSubset(IConstraints other)
+        public bool IsSubset(IConstraints other)
         {
-            throw new System.NotImplementedException();
+            if (!(other is ReachingDefinitionConstraints))
+            {
+                return false;
+            }
+
+            var otherReachingDefinitions = (ReachingDefinitionConstraints) other;
+            foreach (var entry in VariableToPossibleAssignments)
+            {
+                var containsKey =
+                    otherReachingDefinitions.VariableToPossibleAssignments.TryGetValue(entry.Key,
+                        out var otherConstraintNodeSet);
+                if (!containsKey)
+                {
+                    return false;
+                }
+
+                foreach (var tuple in entry.Value)
+                {
+                    if (!otherConstraintNodeSet.Contains(tuple))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }
