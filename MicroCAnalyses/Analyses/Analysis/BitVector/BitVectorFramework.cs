@@ -3,22 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Analyses.Graph;
-using Analyses.Helpers;
+using Microsoft.VisualBasic;
 using Action = Analyses.Analysis.Actions;
 
 [assembly: InternalsVisibleTo("Analyses.Test")]
 namespace Analyses.Analysis.BitVector
 {
-    public abstract class BitVectorFramework<T> : Analysis
+    public abstract class BitVectorFramework : Analysis
     {
         protected Operator JoinOperator;
         protected Direction Direction;
-        protected Dictionary<Node, IConstraints> FinalConstraintsForNodes;
+        public readonly Dictionary<Node, IConstraints> FinalConstraintsForNodes;
         internal Dictionary<Node, IConstraints> Constraints
         {
             get => FinalConstraintsForNodes;
         }
-        internal Dictionary<Node, AnalysisResult<T>> AnalysisResult = new Dictionary<Node, AnalysisResult<T>>();
 
         protected BitVectorFramework(ProgramGraph programGraph)
         {
@@ -31,63 +30,158 @@ namespace Analyses.Analysis.BitVector
 
         public override void Analyse()
         {
-            this.SolveConstraints();
+            SolveConstraints();
         }
 
-        private KeyValuePair<Node, IConstraints> GetNextNode(string toNodeName)
+        private KeyValuePair<Node, IConstraints> GetConstraintsOfNode(string toNodeName)
         {
-            return this.Constraints
-                    .FirstOrDefault(x => x.Key.Name == toNodeName);
+            return Constraints
+                    .Single(x => x.Key.Name == toNodeName);
         }
 
-        public abstract AnalysisResult<T> ConstructConstraintForStartNode(KeyValuePair<Node, IConstraints> startNodeConstraint);
-
-        public abstract void ApplyKillSet(Edge edge, IConstraints constraintSet, AnalysisResult<T> result);
-
-        public abstract void ApplyGenSet(Edge edge, IConstraints constraintSet, AnalysisResult<T> result);
-
-        public abstract void StoreConstraintSet(Node key, AnalysisResult<T> constraintSet);
-
+        public abstract void InitializeConstraints();
+        
+        
         /// <summary>
         /// Locates q_start and construct its constraints;
         /// Afterwards for each node traverses every edge and constructs additional constraints
         /// </summary>
         private void SolveConstraints()
         {
-            String nextNode = "q_start";
-            var startNodeConstraint =
-                this.Constraints
-                    .FirstOrDefault(x => x.Key.Name == nextNode);
-            var currentConstraintSet = this.ConstructConstraintForStartNode(startNodeConstraint);
-            AnalysisResult.Add(startNodeConstraint.Key, currentConstraintSet);
+            InitializeConstraints();
+            var isForward = Direction == Direction.Forward;
+            var firstNode = isForward ?  ProgramGraph.StartNode : ProgramGraph.EndNode;
 
-            foreach (Edge edge in this._program.Edges.Where( x => x.FromNode.Name == nextNode))
+            var orderedEdgesList = OrderEdgesByDirection(isForward);
+            var edgesThatWasUpdated = 0;
+            
+            foreach (var edge in orderedEdgesList)
             {
-                nextNode = edge.ToNode.Name;
-                currentConstraintSet = this.GenerateConstraintsForEdge(edge, nextNode, currentConstraintSet);
+                UpdateConstraints(edge, isForward, ref edgesThatWasUpdated);
             }
-            this.DebugPrint(this.AnalysisResult);
+
+            while (edgesThatWasUpdated != 0)
+            {
+                edgesThatWasUpdated = 0;
+                foreach (var edge in orderedEdgesList)
+                {
+                    UpdateConstraints(edge, isForward, ref edgesThatWasUpdated);
+                }
+            }
         }
 
-        private AnalysisResult<T> GenerateConstraintsForEdge(Edge edge, string nextNode, AnalysisResult<T> currentConstraintSet)
+        private void UpdateConstraints(Edge edge, bool isForward, ref int edgesThatWasUpdated)
         {
-            var newConstraintSet = new AnalysisResult<T>(currentConstraintSet);//create a copy *i hope*
-            Console.WriteLine($"Traversing edge {edge}");
-            var node = this.GetNextNode(nextNode);
+            var edgeStartConstraints = GetConstraintsOfNode(edge.FromNode.Name).Value;
+            var edgeEndConstraints = GetConstraintsOfNode((edge.ToNode.Name)).Value;
+            bool wasUpdated;
+            if (isForward)
+            {
+                wasUpdated = HandleUpdateOfConstraints(edgeStartConstraints, edgeEndConstraints, edge);
+            }
+            else
+            {
+                wasUpdated = HandleUpdateOfConstraints(edgeEndConstraints, edgeStartConstraints, edge);
+            }
 
-            //the killRD
-            this.ApplyKillSet(edge, node.Value, newConstraintSet);
-            //Console.WriteLine($"After killRD: {newConstraintSet.AllToString()}");
-
-            //the genRD
-            this.ApplyGenSet(edge, node.Value, newConstraintSet);
-            //Console.WriteLine($"After genRD: {newConstraintSet.AllToString()}");
-
-            //store it
-            this.StoreConstraintSet(node.Key, newConstraintSet);
-            return new AnalysisResult<T>(newConstraintSet);
+            if (wasUpdated)
+            {
+                edgesThatWasUpdated++;
+            }
         }
 
-        public abstract void DebugPrint(Dictionary<Node, AnalysisResult<T>> analysisResult);
+        private List<Edge> OrderEdgesByDirection(bool isForward)
+        {
+            var edgesList = new List<Edge>();
+            var nodeList = _program.Nodes.ToList();
+            if (isForward)
+            {
+                nodeList.Sort((first, second) =>
+                {
+                    if (first.Name == ProgramGraph.EndNode)
+                    {
+                        return int.MaxValue;
+                    }
+                    return first.Index - second.Index;
+                });
+                foreach (var node in nodeList)
+                {
+                    var edges = _program.Edges.Where(e => e.FromNode.Equals(node)).ToList();
+                    edges.Sort((first, second) =>
+                    {
+                        if (second.ToNode.Name == ProgramGraph.EndNode)
+                        {
+                            return int.MaxValue;
+                        }
+                        return first.ToNode.Index - second.ToNode.Index;
+                    });
+                    edgesList.AddRange(edges);
+                }
+            }
+
+            return edgesList;
+        }
+
+        private bool HandleUpdateOfConstraints(IConstraints leftHandSide, IConstraints rightHandSide, Edge edge)
+        {
+            var updated = false;
+            var isForward = Direction == Direction.Forward;
+            var inMemConstraint = GenerateInMemoryConstraints(leftHandSide, edge);
+            if (JoinOperator == Operator.Union)
+            {
+                if (!(inMemConstraint.IsSubset(rightHandSide)))
+                {
+                    UpdateConstraintsForNode(isForward ? edge.ToNode : edge.FromNode, inMemConstraint);
+                    updated = true;
+                }
+            }
+            else
+            {
+                if (!(inMemConstraint.IsSuperSet(rightHandSide)))
+                {
+                    UpdateConstraintsForNode(isForward ? edge.ToNode: edge.FromNode, inMemConstraint);
+                    updated = true;
+                }
+            }
+
+            return updated;
+        }
+
+        private void UpdateConstraintsForNode(Node node, IConstraints inMemConstraint)
+        {
+            var constraints = FinalConstraintsForNodes[node];
+            constraints.Join(inMemConstraint);
+        }
+
+        /// <summary>
+        /// Clones constraints and applies edge kill and gen sets to it
+        /// </summary>
+        /// <param name="edgeStartConstraints"></param>
+        /// <param name="edge"></param>
+        /// <returns></returns>
+        private IConstraints GenerateInMemoryConstraints(IConstraints edgeStartConstraints, Edge edge)
+        {
+            var inMemConstraint = edgeStartConstraints.Clone();
+            Kill(edge, inMemConstraint);
+            Generate(edge, inMemConstraint);
+            return inMemConstraint;
+        }
+
+        /// <summary>
+        /// Take the edges in the order giving by the direction of the first node.
+        /// </summary>
+        /// <param name="nodeName"></param>
+        /// <returns></returns>
+        private Func<Edge, bool> InDirection(string nodeName)
+        {
+            return (edge) =>
+            {
+                if (Direction == Direction.Forward)
+                {
+                    return edge.FromNode.Name == nodeName;
+                }
+                return edge.ToNode.Name == nodeName;
+            };
+        }
     }
 }
