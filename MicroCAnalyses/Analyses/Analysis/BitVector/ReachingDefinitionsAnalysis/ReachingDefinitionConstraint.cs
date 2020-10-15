@@ -57,7 +57,7 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
         {
             if (!(other is ReachingDefinitionConstraints reachingDefinitionConstraints))
             {
-                throw new Exception("Join operator called with constraint type that was different from ReachingDefinitions");
+                throw new Exception($"Join operator called with constraint type that was different from {nameof(ReachingDefinitionConstraints)}");
             }
             foreach (var (key, set) in reachingDefinitionConstraints.VariableToPossibleAssignments)
             {
