@@ -20,8 +20,22 @@ namespace Analyses.Graph
 
         public override string ToString()
         {
-            return $"Edge with action type {this.Action.ToString()} from {FromNode} to {ToNode}";
+            return $"Edge with action type {Action} from {FromNode} to {ToNode}";
         }
 
+        public override int GetHashCode()
+        {
+            return FromNode.GetHashCode() ^ Action.GetHashCode() ^ ToNode.GetHashCode();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null || !(obj is Edge other))
+            {
+                return false;
+            }
+
+            return FromNode == other.FromNode && Action == other.Action && ToNode == other.ToNode;
+        }
     }
 }
