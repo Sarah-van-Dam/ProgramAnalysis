@@ -31,8 +31,10 @@ type statement =
     | AssignRecord of string * arithmeticExpression * arithmeticExpression
     | AssignArray of string * arithmeticExpression * arithmeticExpression
     | AssignRecordMember of string * arithmeticExpression * int
-    | Read of string
-    | Write of string
+    | ReadVariable of string
+    | ReadArray of string * arithmeticExpression
+    | ReadRecordMember of string * int
+    | Write of arithmeticExpression
     | While of booleanExpression * statement
     | If of booleanExpression * statement 
     | IfElse of booleanExpression * statement * statement

@@ -37,7 +37,7 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
         {
             if (!(constraints is ReachingDefinitionConstraints rdConstraints))
             {
-                throw new Exception("Something went wrong. It should only be possible to call with ReachingDefinitionConstraints");
+                throw new Exception($"Something went wrong. It should only be possible to call with {nameof(ReachingDefinitionConstraints)}");
             }
             switch (edge.Action)
             {

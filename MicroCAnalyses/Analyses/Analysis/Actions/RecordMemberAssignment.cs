@@ -1,13 +1,15 @@
+using Analyses.Helpers;
+
 namespace Analyses.Analysis.Actions
 {
     public class RecordMemberAssignment : Action
     {
         public string RecordName { get; set; }
         public RecordMember RecordMember { get; set; }
-        public string RightHandSide { get; set; }
+        public MicroCTypes.arithmeticExpression RightHandSide { get; set; }
 
         public override string ToSyntax()
-            => $"{RecordName}.{RecordMember} := {RightHandSide};";
+            => $"{RecordName}.{RecordMember} := {AstExtensions.AstToString(RightHandSide)};";
 
         public override string ToString()
         {

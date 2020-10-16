@@ -2,14 +2,16 @@
 {
     public class Condition : Action
     {
-        public string Cond { get; set; }
+        public MicroCTypes.booleanExpression Cond { get; set; }
+
+        public string GraphvizSyntax { get; set; }
 
         public override string ToSyntax()
-            => Cond;
+            => GraphvizSyntax;
 
         public override string ToString()
         {
-            return $"{this.GetType().Name} with Cond: {Cond}";
+            return $"{this.GetType().Name} with Cond: {GraphvizSyntax}";
         }
 
     }
