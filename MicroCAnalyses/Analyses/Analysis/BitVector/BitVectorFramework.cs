@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Analyses.Graph;
+using Analyses.Helpers;
 using Action = Analyses.Analysis.Actions;
 
 [assembly: InternalsVisibleTo("Analyses.Test")]
@@ -22,30 +23,16 @@ namespace Analyses.Analysis.BitVector
 
         public abstract void Generate(Edge edge, IConstraints constraints);
 
-        public override void Analyse()
-        {
-            SolveConstraints();
-        }
-
-        private KeyValuePair<Node, IConstraints> GetConstraintsOfNode(string toNodeName)
-        {
-            return FinalConstraintsForNodes
-                    .Single(x => x.Key.Name == toNodeName);
-        }
-
-        public abstract void InitializeConstraints();
-        
-        
         /// <summary>
         /// Locates q_start and construct its constraints;
         /// Afterwards for each node traverses every edge and constructs additional constraints
         /// </summary>
-        private void SolveConstraints()
+        public override void Analyse()
         {
             InitializeConstraints();
             var isForward = Direction == Direction.Forward;
 
-            var orderedEdgesList = OrderEdgesByDirection(isForward);
+            var orderedEdgesList = EdgesHelper.OrderEdgesByDirection(_program, isForward);
             var edgesThatWasUpdated = 0;
             
             foreach (var edge in orderedEdgesList)
@@ -62,6 +49,14 @@ namespace Analyses.Analysis.BitVector
                 }
             }
         }
+
+        private KeyValuePair<Node, IConstraints> GetConstraintsOfNode(string toNodeName)
+        {
+            return FinalConstraintsForNodes
+                    .Single(x => x.Key.Name == toNodeName);
+        }
+
+        public abstract void InitializeConstraints();
 
         private void UpdateConstraints(Edge edge, bool isForward, ref int edgesThatWasUpdated)
         {
@@ -81,42 +76,6 @@ namespace Analyses.Analysis.BitVector
             {
                 edgesThatWasUpdated++;
             }
-        }
-
-        private List<Edge> OrderEdgesByDirection(bool isForward)
-        {
-            var edgesList = new List<Edge>();
-            var nodeList = _program.Nodes.ToList();
-            nodeList.Sort((first, second) =>
-            {
-                if (first.Name == ProgramGraph.EndNode)
-                {
-                    return int.MaxValue;
-                }
-
-                return first.Index - second.Index;
-            });
-            foreach (var node in nodeList)
-            {
-                var edges = _program.Edges.Where(e => e.FromNode.Equals(node)).ToList();
-                edges.Sort((first, second) =>
-                {
-                    if (second.ToNode.Name == ProgramGraph.EndNode)
-                    {
-                        return int.MaxValue;
-                    }
-
-                    return first.ToNode.Index - second.ToNode.Index;
-                });
-                edgesList.AddRange(edges);
-            }
-
-            if (!isForward)
-            {
-                edgesList.Reverse();
-            }
-
-            return edgesList;
         }
 
         private bool HandleUpdateOfConstraints(IConstraints leftHandSide, IConstraints rightHandSide, Edge edge)
