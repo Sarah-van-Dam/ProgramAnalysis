@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Analyses.Analysis.Actions;
+using Analyses.Helpers;
 
 namespace Analyses.Graph
 {
@@ -275,11 +276,11 @@ namespace Analyses.Graph
             Node qFresh = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh);
             Edge edge1 = new Edge(qBeforeIf,
-                new Condition() {Cond = @if.Item1, GraphvizSyntax = AstToString(@if.Item1)}, qFresh);
+                new Condition() {Cond = @if.Item1, GraphvizSyntax = AstExtensions.AstToString(@if.Item1)}, qFresh);
             Edges.Add(edge1);
             AstToProgramGraph(@if.Item2, qFresh, qAfterIf);
             Edge edge2 = new Edge(qBeforeIf,
-                new Condition() {Cond = @if.Item1, GraphvizSyntax = $"!({AstToString(@if.Item1)})"}, qAfterIf);
+                new Condition() {Cond = @if.Item1, GraphvizSyntax = $"!({AstExtensions.AstToString(@if.Item1)})"}, qAfterIf);
             Edges.Add(edge2);
         }
 
@@ -288,13 +289,13 @@ namespace Analyses.Graph
             Node qFresh1 = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh1);
             Edge edge1 = new Edge(qBeforeIfE,
-                new Condition() {Cond = ifElse.Item1, GraphvizSyntax = AstToString(ifElse.Item1)}, qFresh1);
+                new Condition() {Cond = ifElse.Item1, GraphvizSyntax = AstExtensions.AstToString(ifElse.Item1)}, qFresh1);
             Edges.Add(edge1);
             AstToProgramGraph(ifElse.Item2, qFresh1, qAfterIfE);
             Node qFresh2 = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh2);
             Edge edge2 = new Edge(qBeforeIfE,
-                new Condition() {Cond = ifElse.Item1, GraphvizSyntax = $"!({AstToString(ifElse.Item1)})"}, qFresh2);
+                new Condition() {Cond = ifElse.Item1, GraphvizSyntax = $"!({AstExtensions.AstToString(ifElse.Item1)})"}, qFresh2);
             Edges.Add(edge2);
             AstToProgramGraph(ifElse.Item3, qFresh2, qAfterIfE);
         }
@@ -304,79 +305,14 @@ namespace Analyses.Graph
             Node qFresh = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh);
             Edge edge1 = new Edge(qBeforeWhile,
-                new Condition() {Cond = @while.Item1, GraphvizSyntax = AstToString(@while.Item1)}, qFresh);
+                new Condition() {Cond = @while.Item1, GraphvizSyntax = AstExtensions.AstToString(@while.Item1)}, qFresh);
             Edges.Add(edge1);
             AstToProgramGraph(@while.Item2, qFresh, qBeforeWhile);
             Edge edge2 = new Edge(qBeforeWhile,
-                new Condition() {Cond = @while.Item1, GraphvizSyntax = $"!({AstToString(@while.Item1)})"},
+                new Condition() {Cond = @while.Item1, GraphvizSyntax = $"!({AstExtensions.AstToString(@while.Item1)})"},
                 qAfterWhile);
             Edges.Add(edge2);
         }
 
-        /// <summary>
-        /// Converts an expression from the AST into a string. Parantheses added for clarity of the ordering.
-        /// </summary>
-        /// <param name="expr"></param>
-        /// <returns></returns>
-        private string AstToString(MicroCTypes.arithmeticExpression expr)
-        {
-            switch (expr)
-            {
-                case MicroCTypes.arithmeticExpression.Divide opr:
-                    return $"({AstToString(opr.Item1)} / {AstToString(opr.Item2)})";
-                case MicroCTypes.arithmeticExpression.Minus opr:
-                    return $"({AstToString(opr.Item1)} - {AstToString(opr.Item2)})";
-                case MicroCTypes.arithmeticExpression.Modulo opr:
-                    return $"({AstToString(opr.Item1)} % {AstToString(opr.Item2)})";
-                case MicroCTypes.arithmeticExpression.Multiply opr:
-                    return $"({AstToString(opr.Item1)} * {AstToString(opr.Item2)})";
-                case MicroCTypes.arithmeticExpression.Plus opr:
-                    return $"({AstToString(opr.Item1)} + {AstToString(opr.Item2)})";
-                case MicroCTypes.arithmeticExpression.Power opr:
-                    return $"({AstToString(opr.Item1)} ^ {AstToString(opr.Item2)})";
-                case MicroCTypes.arithmeticExpression.RecordMember opr:
-                    return $"{opr.Item1}.{(opr.Item2 == 1 ? RecordMember.Fst : RecordMember.Snd)}";
-                case MicroCTypes.arithmeticExpression.Variable opr:
-                    return $"{opr.Item}";
-                case MicroCTypes.arithmeticExpression.Number n:
-                    return n.Item.ToString();
-                default:
-                    return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Converts a boolean expression from the AST into a string. Parantheses added for clarity of the ordering.
-        /// </summary>
-        /// <param name="expr"></param>
-        /// <returns></returns>
-        private string AstToString(MicroCTypes.booleanExpression expr)
-        {
-            switch (expr)
-            {
-                case MicroCTypes.booleanExpression.And opr:
-                    return $"{AstToString(opr.Item1)} & {AstToString(opr.Item2)}";
-                case MicroCTypes.booleanExpression.Equal opr:
-                    return $"{AstToString(opr.Item1)} == {AstToString(opr.Item2)}";
-                case MicroCTypes.booleanExpression.GreatEqual opr:
-                    return $"{AstToString(opr.Item1)} >= {AstToString(opr.Item2)}";
-                case MicroCTypes.booleanExpression.Great opr:
-                    return $"{AstToString(opr.Item1)} > {AstToString(opr.Item2)}";
-                case MicroCTypes.booleanExpression.LessEqual opr:
-                    return $"{AstToString(opr.Item1)} <= {AstToString(opr.Item2)}";
-                case MicroCTypes.booleanExpression.Less opr:
-                    return $"{AstToString(opr.Item1)} < {AstToString(opr.Item2)}";
-                case MicroCTypes.booleanExpression.NotEqual opr:
-                    return $"{AstToString(opr.Item1)} != {AstToString(opr.Item2)}";
-                case MicroCTypes.booleanExpression.Not opr:
-                    return $"!{AstToString(opr.Item)}";
-                case MicroCTypes.booleanExpression.Or opr:
-                    return $"{AstToString(opr.Item1)} | {AstToString(opr.Item2)}";
-                default:
-                    if (expr == MicroCTypes.booleanExpression.False) return "false";
-                    else if (expr == MicroCTypes.booleanExpression.True) return "true";
-                    else return string.Empty;
-            }
-        }
     }
 }

@@ -1,3 +1,5 @@
+using Analyses.Helpers;
+
 namespace Analyses.Analysis.Actions
 {
     public class ArrayAssignment : Action
@@ -7,7 +9,7 @@ namespace Analyses.Analysis.Actions
         public MicroCTypes.arithmeticExpression RightHandSide { get; set; }
 
         public override string ToSyntax()
-            => $"{ArrayName}[{Index}] := {RightHandSide};";
+            => $"{ArrayName}[{AstExtensions.AstToString(Index)}] := {AstExtensions.AstToString(RightHandSide)};";
 
         public override string ToString()
         {

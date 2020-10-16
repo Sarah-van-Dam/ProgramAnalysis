@@ -1,3 +1,5 @@
+using Analyses.Helpers;
+
 namespace Analyses.Analysis.Actions
 {
     public class RecordAssignment : Action
@@ -7,7 +9,7 @@ namespace Analyses.Analysis.Actions
         public MicroCTypes.arithmeticExpression SecondExpression { get; set; }
 
         public override string ToSyntax()
-            => $"{RecordName} := ({FirstExpression}, {SecondExpression});";
+            => $"{RecordName} := ({AstExtensions.AstToString(FirstExpression)}, {AstExtensions.AstToString(SecondExpression)});";
 
         public override string ToString()
         {

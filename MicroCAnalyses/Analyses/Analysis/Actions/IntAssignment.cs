@@ -1,3 +1,5 @@
+using Analyses.Helpers;
+
 namespace Analyses.Analysis.Actions
 {
     public class IntAssignment : Action
@@ -6,7 +8,7 @@ namespace Analyses.Analysis.Actions
         public MicroCTypes.arithmeticExpression RightHandSide { get; set; }
 
         public override string ToSyntax()
-            => $"{VariableName} := {RightHandSide};";
+            => $"{VariableName} := {AstExtensions.AstToString(RightHandSide)};";
 
         public override string ToString()
         {
