@@ -48,8 +48,7 @@ namespace Analyses.Analysis.BitVector.LiveVariablesAnalysis
             LiveVariables.UnionWith(liveVariableConstraint.LiveVariables);
         }
         
-        //Todo: Equals and Hashcode
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
              if (obj == null || !(obj is LiveVariableConstraint other))
              {
