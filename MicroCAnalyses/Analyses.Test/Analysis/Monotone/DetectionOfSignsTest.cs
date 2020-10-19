@@ -27,7 +27,7 @@ namespace Analyses.Test.Analysis.Monotone
         public void TestFinalSignsCorrectness()
         {
 
-            _analysis = new DetectionOfSigns(_graph, new HashSet<(string variable, bool negative, bool zero, bool positive)>());
+            _analysis = new DetectionOfSigns(_graph, new HashSet<(string variable, Sign)>() { ("f2", Sign.Positive), ("f1", Sign.Positive) });
             _analysis.InitializeConstraints();
             _analysis.Analyse();
 
