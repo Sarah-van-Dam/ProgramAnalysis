@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Analyses.Algorithms;
 using Analyses.Analysis.Actions;
 using Analyses.Graph;
 
@@ -8,9 +9,10 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
 {
     public class ReachingDefinitions : BitVectorFramework
     {
-        public ReachingDefinitions(ProgramGraph programGraph) : base(programGraph)
+        public ReachingDefinitions(ProgramGraph programGraph,
+            WorklistImplementation worklistImplementation = WorklistImplementation.SortedIteration) : base(programGraph,
+            Direction.Forward, worklistImplementation)
         {
-            Direction = Direction.Forward;
             JoinOperator = Operator.Union;
         }
 
@@ -22,7 +24,8 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
             }
 
             var startingConstraints =
-                FinalConstraintsForNodes[_program.Nodes.Single(n => n.Name == ProgramGraph.StartNode)] as ReachingDefinitionConstraints;
+                FinalConstraintsForNodes[_program.Nodes.Single(n => n.Name == ProgramGraph.StartNode)] as
+                    ReachingDefinitionConstraints;
             foreach (var variableName in _program.VariableNames)
             {
                 startingConstraints.VariableToPossibleAssignments[variableName] =
@@ -37,8 +40,10 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
         {
             if (!(constraints is ReachingDefinitionConstraints rdConstraints))
             {
-                throw new Exception($"Something went wrong. It should only be possible to call with {nameof(ReachingDefinitionConstraints)}");
+                throw new Exception(
+                    $"Something went wrong. It should only be possible to call with {nameof(ReachingDefinitionConstraints)}");
             }
+
             switch (edge.Action)
             {
                 case IntDeclaration intDeclaration:
@@ -80,7 +85,8 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     // A read from an array cannot kill anything because of amalgamation
                     break;
                 case ReadRecordMember recordMember:
-                    rdConstraints.VariableToPossibleAssignments[$"{recordMember.RecordName}.{recordMember.RecordMember}"]
+                    rdConstraints.VariableToPossibleAssignments[
+                            $"{recordMember.RecordName}.{recordMember.RecordMember}"]
                         =
                         new HashSet<(string variable, string startNode, string endNode)>();
                     break;
@@ -97,8 +103,10 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
         {
             if (!(constraints is ReachingDefinitionConstraints rdConstraints))
             {
-                throw new Exception("Something went wrong. It should only be possible to call with ReachingDefinitionConstraints");
+                throw new Exception(
+                    "Something went wrong. It should only be possible to call with ReachingDefinitionConstraints");
             }
+
             switch (edge.Action)
             {
                 case IntDeclaration intDeclaration:
@@ -146,7 +154,8 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                         .Add((readArray.ArrayName, edge.FromNode.Name, edge.ToNode.Name));
                     break;
                 case ReadRecordMember recordMember:
-                    rdConstraints.VariableToPossibleAssignments[$"{recordMember.RecordName}.{recordMember.RecordMember}"]
+                    rdConstraints
+                        .VariableToPossibleAssignments[$"{recordMember.RecordName}.{recordMember.RecordMember}"]
                         .Add(($"{recordMember.RecordName}.{recordMember.RecordMember}", edge.FromNode.Name,
                             edge.ToNode.Name));
                     break;
@@ -159,6 +168,5 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                         $"No gen set has been generated for this action: {edge.Action} ");
             }
         }
-
     }
 }

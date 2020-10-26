@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Analyses.Algorithms;
 using Analyses.Analysis.Actions;
 using Analyses.Graph;
 
@@ -9,9 +10,8 @@ namespace Analyses.Analysis.BitVector.LiveVariablesAnalysis
     {
         private readonly FreeVariablesAnalysis _freeVariablesAnalysis;
 
-        public LiveVariables(ProgramGraph programGraph) : base(programGraph)
+        public LiveVariables(ProgramGraph programGraph, WorklistImplementation worklistImplementation = WorklistImplementation.SortedIteration) : base(programGraph, Direction.Backwards, worklistImplementation)
         {
-            Direction = Direction.Backwards;
             JoinOperator = Operator.Union;
             _freeVariablesAnalysis = new FreeVariablesAnalysis();
         }

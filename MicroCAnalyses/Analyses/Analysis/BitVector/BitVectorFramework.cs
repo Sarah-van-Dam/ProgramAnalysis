@@ -7,21 +7,20 @@ using Analyses.Helpers;
 using Action = Analyses.Analysis.Actions;
 
 [assembly: InternalsVisibleTo("Analyses.Test")]
+
 namespace Analyses.Analysis.BitVector
 {
     public abstract class BitVectorFramework : Analysis
     {
         protected Operator JoinOperator;
-        protected Direction Direction;
         public readonly Dictionary<Node, IConstraints> FinalConstraintsForNodes;
-        private readonly WorklistAlgorithm _worklistAlgorithm;
 
-        protected BitVectorFramework(ProgramGraph programGraph)
+        protected BitVectorFramework(ProgramGraph programGraph, Direction direction,
+            WorklistImplementation worklistImplementation) : base(programGraph, direction, worklistImplementation)
         {
-            _program = programGraph;
             FinalConstraintsForNodes = new Dictionary<Node, IConstraints>();
-            _worklistAlgorithm = new SortedIterationWorklist(Direction);
         }
+
         public abstract void Kill(Edge edge, IConstraints constraints);
 
         public abstract void Generate(Edge edge, IConstraints constraints);
@@ -56,7 +55,7 @@ namespace Analyses.Analysis.BitVector
         private KeyValuePair<Node, IConstraints> GetConstraintsOfNode(string toNodeName)
         {
             return FinalConstraintsForNodes
-                    .Single(x => x.Key.Name == toNodeName);
+                .Single(x => x.Key.Name == toNodeName);
         }
 
         public abstract void InitializeConstraints();
@@ -95,7 +94,7 @@ namespace Analyses.Analysis.BitVector
             {
                 if (!(inMemConstraint.IsSuperSet(rightHandSide)))
                 {
-                    UpdateConstraintsForNode(isForward ? edge.ToNode: edge.FromNode, inMemConstraint);
+                    UpdateConstraintsForNode(isForward ? edge.ToNode : edge.FromNode, inMemConstraint);
                     updated = true;
                 }
             }

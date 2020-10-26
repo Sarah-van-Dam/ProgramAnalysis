@@ -10,14 +10,11 @@ namespace Analyses.Analysis.Distributive
         protected Operator JoinOperator;
         protected Direction Direction;
         public readonly Dictionary<Node, IConstraints> FinalConstraintsForNodes;
-        private readonly WorklistAlgorithm _worklistAlgorithm;
         
 
-        protected DistributiveFramework(ProgramGraph programGraph)
+        protected DistributiveFramework(ProgramGraph programGraph, Direction direction, WorklistImplementation worklistImplementation) : base(programGraph, direction, worklistImplementation)
         {
-            _program = programGraph;
             FinalConstraintsForNodes = new Dictionary<Node, IConstraints>();
-            _worklistAlgorithm = new SortedIterationWorklist(Direction);
         }
         
         public abstract void InitializeConstraints();

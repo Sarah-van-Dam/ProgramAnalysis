@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Analyses.Algorithms;
 using Analyses.Analysis.Actions;
 using Analyses.Graph;
 
@@ -10,7 +11,7 @@ namespace Analyses.Analysis.Distributive
     {
         private readonly FreeVariablesAnalysis _freeVariablesAnalysis;
         
-        public FaintVariables(ProgramGraph programGraph) : base(programGraph)
+        public FaintVariables(ProgramGraph programGraph, WorklistImplementation worklistImplementation = WorklistImplementation.SortedIteration) : base(programGraph, Direction.Backwards, worklistImplementation)
         {
             Direction = Direction.Backwards;
             JoinOperator = Operator.Union;
