@@ -76,7 +76,7 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
             throw new System.NotImplementedException();
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             if (obj == null || !(obj is ReachingDefinitionConstraints other))
             {

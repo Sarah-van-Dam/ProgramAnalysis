@@ -28,7 +28,8 @@ namespace Analyses.Graph
             return FromNode.GetHashCode() ^ Action.GetHashCode() ^ ToNode.GetHashCode();
         }
 
-        public override bool Equals(object? obj)
+        
+        public override bool Equals(object obj)
         {
             if (obj == null || !(obj is Edge other))
             {

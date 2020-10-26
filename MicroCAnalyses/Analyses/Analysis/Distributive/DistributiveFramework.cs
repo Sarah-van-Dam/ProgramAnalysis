@@ -1,32 +1,24 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using Analyses.Graph;
 using Analyses.Helpers;
-using Action = Analyses.Analysis.Actions;
 
-[assembly: InternalsVisibleTo("Analyses.Test")]
-namespace Analyses.Analysis.BitVector
+namespace Analyses.Analysis.Distributive
 {
-    public abstract class BitVectorFramework : Analysis
+    public abstract class DistributiveFramework : Analysis
     {
         protected Operator JoinOperator;
         protected Direction Direction;
         public readonly Dictionary<Node, IConstraints> FinalConstraintsForNodes;
 
-        protected BitVectorFramework(ProgramGraph programGraph)
+        protected DistributiveFramework(ProgramGraph programGraph)
         {
             _program = programGraph;
             FinalConstraintsForNodes = new Dictionary<Node, IConstraints>();
         }
-        public abstract void Kill(Edge edge, IConstraints constraints);
-
-        public abstract void Generate(Edge edge, IConstraints constraints);
-
-        /// <summary>
-        /// Locates q_start and construct its constraints;
-        /// Afterwards for each node traverses every edge and constructs additional constraints
-        /// </summary>
+        
+        public abstract void InitializeConstraints();
+        protected abstract void AnalysisFunction(Edge edge, IConstraints constraints);
+     
         public override void Analyse()
         {
             InitializeConstraints();
@@ -50,18 +42,10 @@ namespace Analyses.Analysis.BitVector
             }
         }
 
-        private KeyValuePair<Node, IConstraints> GetConstraintsOfNode(string toNodeName)
+        private void UpdateConstraints(Edge edge, in bool isForward, ref int edgesThatWasUpdated)
         {
-            return FinalConstraintsForNodes
-                    .Single(x => x.Key.Name == toNodeName);
-        }
-
-        public abstract void InitializeConstraints();
-
-        private void UpdateConstraints(Edge edge, bool isForward, ref int edgesThatWasUpdated)
-        {
-            var edgeStartConstraints = GetConstraintsOfNode(edge.FromNode.Name).Value;
-            var edgeEndConstraints = GetConstraintsOfNode((edge.ToNode.Name)).Value;
+            var edgeStartConstraints = FinalConstraintsForNodes[edge.FromNode];
+            var edgeEndConstraints = FinalConstraintsForNodes[edge.ToNode];
             bool wasUpdated;
             if (isForward)
             {
@@ -77,7 +61,7 @@ namespace Analyses.Analysis.BitVector
                 edgesThatWasUpdated++;
             }
         }
-
+        
         private bool HandleUpdateOfConstraints(IConstraints leftHandSide, IConstraints rightHandSide, Edge edge)
         {
             var updated = false;
@@ -102,7 +86,7 @@ namespace Analyses.Analysis.BitVector
 
             return updated;
         }
-
+        
         private void UpdateConstraintsForNode(Node node, IConstraints inMemConstraint)
         {
             var constraints = FinalConstraintsForNodes[node];
@@ -118,8 +102,7 @@ namespace Analyses.Analysis.BitVector
         private IConstraints GenerateInMemoryConstraints(IConstraints edgeStartConstraints, Edge edge)
         {
             var inMemConstraint = edgeStartConstraints.Clone();
-            Kill(edge, inMemConstraint);
-            Generate(edge, inMemConstraint);
+            AnalysisFunction(edge, inMemConstraint);
             return inMemConstraint;
         }
     }
