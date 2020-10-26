@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Analyses.Algorithms;
 using Analyses.Graph;
 using Analyses.Helpers;
 using Action = Analyses.Analysis.Actions;
@@ -13,11 +14,13 @@ namespace Analyses.Analysis.BitVector
         protected Operator JoinOperator;
         protected Direction Direction;
         public readonly Dictionary<Node, IConstraints> FinalConstraintsForNodes;
+        private readonly WorklistAlgorithm _worklistAlgorithm;
 
         protected BitVectorFramework(ProgramGraph programGraph)
         {
             _program = programGraph;
             FinalConstraintsForNodes = new Dictionary<Node, IConstraints>();
+            _worklistAlgorithm = new SortedIterationWorklist(Direction);
         }
         public abstract void Kill(Edge edge, IConstraints constraints);
 
@@ -30,22 +33,22 @@ namespace Analyses.Analysis.BitVector
         public override void Analyse()
         {
             InitializeConstraints();
-            var isForward = Direction == Direction.Forward;
-
-            var orderedEdgesList = EdgesHelper.OrderEdgesByDirection(_program, isForward);
-            var edgesThatWasUpdated = 0;
-            
-            foreach (var edge in orderedEdgesList)
+            foreach (var node in _program.Nodes)
             {
-                UpdateConstraints(edge, isForward, ref edgesThatWasUpdated);
+                _worklistAlgorithm.Insert(node);
             }
 
-            while (edgesThatWasUpdated != 0)
+            var isForward = Direction == Direction.Forward;
+            while (!_worklistAlgorithm.Empty())
             {
-                edgesThatWasUpdated = 0;
-                foreach (var edge in orderedEdgesList)
+                var node = _worklistAlgorithm.Extract();
+                foreach (var edge in isForward ? node.OutGoingEdges : node.InGoingEdges)
                 {
-                    UpdateConstraints(edge, isForward, ref edgesThatWasUpdated);
+                    var updated = UpdateConstraints(edge, isForward);
+                    if (updated)
+                    {
+                        _worklistAlgorithm.Insert(isForward ? edge.ToNode : edge.FromNode);
+                    }
                 }
             }
         }
@@ -58,7 +61,7 @@ namespace Analyses.Analysis.BitVector
 
         public abstract void InitializeConstraints();
 
-        private void UpdateConstraints(Edge edge, bool isForward, ref int edgesThatWasUpdated)
+        private bool UpdateConstraints(Edge edge, bool isForward)
         {
             var edgeStartConstraints = GetConstraintsOfNode(edge.FromNode.Name).Value;
             var edgeEndConstraints = GetConstraintsOfNode((edge.ToNode.Name)).Value;
@@ -72,10 +75,7 @@ namespace Analyses.Analysis.BitVector
                 wasUpdated = HandleUpdateOfConstraints(edgeEndConstraints, edgeStartConstraints, edge);
             }
 
-            if (wasUpdated)
-            {
-                edgesThatWasUpdated++;
-            }
+            return wasUpdated;
         }
 
         private bool HandleUpdateOfConstraints(IConstraints leftHandSide, IConstraints rightHandSide, Edge edge)

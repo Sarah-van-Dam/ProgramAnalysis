@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Analyses.Algorithms;
 using Analyses.Graph;
 using Analyses.Helpers;
 
@@ -9,11 +10,14 @@ namespace Analyses.Analysis.Distributive
         protected Operator JoinOperator;
         protected Direction Direction;
         public readonly Dictionary<Node, IConstraints> FinalConstraintsForNodes;
+        private readonly WorklistAlgorithm _worklistAlgorithm;
+        
 
         protected DistributiveFramework(ProgramGraph programGraph)
         {
             _program = programGraph;
             FinalConstraintsForNodes = new Dictionary<Node, IConstraints>();
+            _worklistAlgorithm = new SortedIterationWorklist(Direction);
         }
         
         public abstract void InitializeConstraints();
@@ -23,26 +27,28 @@ namespace Analyses.Analysis.Distributive
         {
             InitializeConstraints();
             var isForward = Direction == Direction.Forward;
-
-            var orderedEdgesList = EdgesHelper.OrderEdgesByDirection(_program, isForward);
-            var edgesThatWasUpdated = 0;
             
-            foreach (var edge in orderedEdgesList)
+            foreach (var node in _program.Nodes)
             {
-                UpdateConstraints(edge, isForward, ref edgesThatWasUpdated);
+                _worklistAlgorithm.Insert(node);
             }
 
-            while (edgesThatWasUpdated != 0)
+            while (!_worklistAlgorithm.Empty())
             {
-                edgesThatWasUpdated = 0;
-                foreach (var edge in orderedEdgesList)
+                var node = _worklistAlgorithm.Extract();
+                foreach (var edge in isForward ? node.OutGoingEdges : node.InGoingEdges)
                 {
-                    UpdateConstraints(edge, isForward, ref edgesThatWasUpdated);
+                    var updated = UpdateConstraints(edge, isForward);
+                    if (updated)
+                    {
+                        _worklistAlgorithm.Insert(isForward ? edge.ToNode : edge.FromNode);
+                    }
                 }
             }
+            
         }
 
-        private void UpdateConstraints(Edge edge, in bool isForward, ref int edgesThatWasUpdated)
+        private bool UpdateConstraints(Edge edge, in bool isForward)
         {
             var edgeStartConstraints = FinalConstraintsForNodes[edge.FromNode];
             var edgeEndConstraints = FinalConstraintsForNodes[edge.ToNode];
@@ -56,10 +62,7 @@ namespace Analyses.Analysis.Distributive
                 wasUpdated = HandleUpdateOfConstraints(edgeEndConstraints, edgeStartConstraints, edge);
             }
 
-            if (wasUpdated)
-            {
-                edgesThatWasUpdated++;
-            }
+            return wasUpdated;
         }
         
         private bool HandleUpdateOfConstraints(IConstraints leftHandSide, IConstraints rightHandSide, Edge edge)
