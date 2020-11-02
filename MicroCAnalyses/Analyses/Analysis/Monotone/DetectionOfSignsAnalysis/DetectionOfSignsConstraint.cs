@@ -16,6 +16,9 @@ namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 			VariableSigns = new Dictionary<string, (string variable, HashSet<Sign> signs)>();
 		}
 
+		public override string ToString()
+			=> "Detection of Signs constraint\n" + string.Join("\n", VariableSigns.Select(entry => $"({entry.Key}, {{{string.Join(", ", entry.Value.signs)}}})"));
+
 		public IConstraints Clone()
 		{
 			var clonedConstraints = new DetectionOfSignsConstraint();
@@ -44,7 +47,7 @@ namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 					return false;
 				}
 
-				if (otherConstraintNodeSet.variable != entry.Value.variable || !otherConstraintNodeSet.signs.SetEquals(entry.Value.signs))
+				if (!otherConstraintNodeSet.signs.IsSupersetOf(entry.Value.signs))
 				{
 					return false;
 				}
@@ -72,7 +75,7 @@ namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 					existingSet = (key, new HashSet<Sign>());
 					VariableSigns[key] = existingSet;
 				}
-				existingSet.signs.Union(set.signs);
+				existingSet.signs.UnionWith(set.signs);
 			}
 		}
 

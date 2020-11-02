@@ -35,13 +35,6 @@ namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 			}
 		}
 
-        private void CreateEntry(DetectionOfSignsConstraint dosConstraints, string entryName)
-        {
-            if (!dosConstraints.VariableSigns.ContainsKey(entryName))
-                dosConstraints.VariableSigns[entryName] = (entryName, new HashSet<Sign>());
-            dosConstraints.VariableSigns[entryName].signs.Clear();
-        }
-
         protected override void AnalysisFunction(Edge edge, IConstraints constraints)
         {
             if (!(constraints is DetectionOfSignsConstraint dosConstraints))
@@ -51,18 +44,19 @@ namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
             switch (edge.Action)
             {
                 case IntDeclaration intDeclaration:
-                    CreateEntry(dosConstraints, intDeclaration.VariableName);
+                    dosConstraints.VariableSigns[intDeclaration.VariableName] = (intDeclaration.VariableName, new HashSet<Sign>() { Sign.Zero });
                     break;
                 case ArrayDeclaration arrayDeclaration:
-                    CreateEntry(dosConstraints, arrayDeclaration.ArrayName);
-                    dosConstraints.VariableSigns[arrayDeclaration.ArrayName].signs.Add(Sign.Zero);
+                    dosConstraints.VariableSigns[arrayDeclaration.ArrayName] = (arrayDeclaration.ArrayName, new HashSet<Sign>() { Sign.Zero });
                     break;
                 case Condition condition:
                     //A condition does not affect accessors
                     break;
                 case RecordDeclaration recordDeclaration:
-                    CreateEntry(dosConstraints, $"{recordDeclaration.VariableName}.{RecordMember.Fst}");
-                    CreateEntry(dosConstraints, $"{recordDeclaration.VariableName}.{RecordMember.Snd}");
+                    dosConstraints.VariableSigns[$"{recordDeclaration.VariableName}.{RecordMember.Fst}"] =
+                        ($"{recordDeclaration.VariableName}.{RecordMember.Fst}", new HashSet<Sign>() { Sign.Zero });
+                    dosConstraints.VariableSigns[$"{recordDeclaration.VariableName}.{RecordMember.Snd}"] =
+                        ($"{recordDeclaration.VariableName}.{RecordMember.Snd}", new HashSet<Sign>() { Sign.Zero });
                     break;
                 case IntAssignment intAssignment:
                     dosConstraints.VariableSigns[intAssignment.VariableName] = (intAssignment.VariableName, dosConstraints.getSigns(intAssignment.RightHandSide));
