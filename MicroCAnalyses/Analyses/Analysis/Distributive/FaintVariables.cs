@@ -13,7 +13,6 @@ namespace Analyses.Analysis.Distributive
         
         public FaintVariables(ProgramGraph programGraph, WorklistImplementation worklistImplementation = WorklistImplementation.SortedIteration) : base(programGraph, Direction.Backwards, worklistImplementation)
         {
-            Direction = Direction.Backwards;
             JoinOperator = Operator.Union;
             _freeVariablesAnalysis = new FreeVariablesAnalysis();
         }
