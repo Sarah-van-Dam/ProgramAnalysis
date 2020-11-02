@@ -8,9 +8,7 @@ namespace Analyses.Analysis.Distributive
     public abstract class DistributiveFramework : Analysis
     {
         protected Operator JoinOperator;
-        protected Direction Direction;
         public readonly Dictionary<Node, IConstraints> FinalConstraintsForNodes;
-        
 
         protected DistributiveFramework(ProgramGraph programGraph, Direction direction, WorklistImplementation worklistImplementation) : base(programGraph, direction, worklistImplementation)
         {

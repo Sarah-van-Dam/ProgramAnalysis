@@ -15,6 +15,8 @@ namespace Analyses.Algorithms
         {
             _nodes = new List<Node>();
             _direction = direction;
+
+            BasicActionsNeeded = 0;
         }
         
         public override bool Empty()
@@ -24,12 +26,14 @@ namespace Analyses.Algorithms
 
         public override void Insert(Node q)
         {
+            BasicActionsNeeded++;
             _nodes.Add(q);
             SortingHelper.OrderNodesByDirection(_nodes, _direction == Direction.Forward);
         }
 
         public override Node Extract()
         {
+            BasicActionsNeeded++;
             if (Empty())
             {
                 throw new Exception("Worklist is empty. Cannot extract node");
