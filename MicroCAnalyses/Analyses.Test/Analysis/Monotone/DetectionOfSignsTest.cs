@@ -25,7 +25,7 @@ namespace Analyses.Test.Analysis.Monotone
         public void TestFinalSignsCorrectness()
         {
 
-            _analysis = new DetectionOfSigns(_graph, new HashSet<(string variable, Sign)>() { ("f2", Sign.Positive), ("f1", Sign.Positive), ("input", Sign.Zero), ("current", Sign.Zero) });
+            _analysis = new DetectionOfSigns(_graph);
             _analysis.InitializeConstraints();
             _analysis.Analyse();
 
@@ -53,40 +53,17 @@ namespace Analyses.Test.Analysis.Monotone
         }
 
         [Fact]
-        public void TestSupportMultipleInputSigns()
-        {
-
-            _analysis = new DetectionOfSigns(_graph, new HashSet<(string variable, Sign)>() { ("f2", Sign.Positive), ("f2", Sign.Negative), ("f1", Sign.Positive), ("input", Sign.Zero), ("current", Sign.Zero) });
-            _analysis.InitializeConstraints();
-            _analysis.Analyse();
-
-            var startNode = _graph.Nodes.First(node => node.Name == ProgramGraph.StartNode);
-            var constraintStart = _analysis.FinalConstraintsForNodes[startNode] as DetectionOfSignsConstraint;
-
-            var endNode = _graph.Nodes.First(node => node.Name == ProgramGraph.EndNode);
-            var constraintEnd = _analysis.FinalConstraintsForNodes[endNode] as DetectionOfSignsConstraint;
-
-            // f2 can only be positive, as it is assigned during the program.
-            // for the entry node, q_start, f2 should be { Negative, Positive }.
-            Assert.True(constraintEnd.VariableSigns["f2"].signs.SetEquals(new HashSet<Sign>() { Sign.Positive }),
-                $"Expected 'f2' to be {{ Positive }} for {ProgramGraph.EndNode}, but got {{ {string.Join(", ", constraintEnd.VariableSigns["f2"].signs)} }}.");
-
-            Assert.True(constraintStart.VariableSigns["f2"].signs.SetEquals(new HashSet<Sign>() { Sign.Negative, Sign.Positive }),
-                $"Expected 'f2' to be {{ Negative, Positive }} for {ProgramGraph.StartNode}, but got {{ {string.Join(", ", constraintStart.VariableSigns["f2"].signs)} }}.");
-        }
-
-        [Fact]
         public void TestSameInputSameOutput()
         {
 
-            _analysis = new DetectionOfSigns(_graph, new HashSet<(string variable, Sign)>() { ("f2", Sign.Negative), ("f1", Sign.Positive), ("input", Sign.Positive), ("current", Sign.Zero) });
+            _analysis = new DetectionOfSigns(_graph);
             _analysis.InitializeConstraints();
             _analysis.Analyse();
 
             var endNode1 = _graph.Nodes.First(node => node.Name == ProgramGraph.EndNode);
             var constraint1 = _analysis.FinalConstraintsForNodes[endNode1] as DetectionOfSignsConstraint;
 
-            _analysis = new DetectionOfSigns(_graph, new HashSet<(string variable, Sign)>() { ("f2", Sign.Negative), ("f1", Sign.Positive), ("input", Sign.Positive), ("current", Sign.Zero) });
+            _analysis = new DetectionOfSigns(_graph);
             _analysis.InitializeConstraints();
             _analysis.Analyse();
 

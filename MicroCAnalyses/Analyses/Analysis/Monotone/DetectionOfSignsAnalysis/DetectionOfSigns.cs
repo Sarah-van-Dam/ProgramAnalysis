@@ -11,12 +11,7 @@ namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 {
 	class DetectionOfSigns : DistributiveFramework
 	{
-		private readonly HashSet<(string variable, Sign sign)> initialSigns;
-
-		public DetectionOfSigns(ProgramGraph programGraph, HashSet<(string variable, Sign sign)> initialSigns) : base(programGraph)
-		{
-			this.initialSigns = initialSigns;
-		}
+        public DetectionOfSigns(ProgramGraph graph) : base(graph) { }
 
 		public override void InitializeConstraints()
 		{
@@ -27,12 +22,10 @@ namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 
 			var startingConstraints = FinalConstraintsForNodes[_program.Nodes.Single(n => n.Name == ProgramGraph.StartNode)] as DetectionOfSignsConstraint;
 
-			foreach ((string variable, Sign sign) in initialSigns)
-			{
-                if (!startingConstraints.VariableSigns.ContainsKey(variable))
-                    startingConstraints.VariableSigns[variable] = (variable, new HashSet<Sign>());
-                startingConstraints.VariableSigns[variable].signs.Add(sign);
-			}
+            foreach (string variable in _program.VariableNames)
+            {
+                startingConstraints.VariableSigns[variable] = (variable, new HashSet<Sign>());
+            }
 		}
 
         protected override void AnalysisFunction(Edge edge, IConstraints constraints)
