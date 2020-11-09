@@ -119,7 +119,7 @@ namespace Analyses.Test.Analysis.Algorithms
 
             Assert.True(counter > 0, $"Expected Insert() count to be positive for counter, as program is not empty.");
 
-            Assert.True(counter == 70, $"Expected Insert() count for counter to be 22. This is based on observing a previous run. Got {counter}");
+            Assert.True(counter == 70, $"Expected Insert() count for counter to be 70. This is based on observing a previous run. Got {counter}");
         }
 
 
