@@ -13,7 +13,8 @@ namespace Analyses.Test.Analysis.Algorithms
 	public class WorklistLIFOAlgorithmTests
 	{
 
-        private ReachingDefinitions _analysis;
+        private ReachingDefinitions _analysisRD;
+        private DetectionOfSigns _analysisDoS;
         private readonly ProgramGraph _graphFibonacci;
         private readonly ProgramGraph _graphAddIntegers;
 
@@ -36,18 +37,18 @@ namespace Analyses.Test.Analysis.Algorithms
         public void TestSameInsertCountFibonacci()
         {
 
-            _analysis = new ReachingDefinitions(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Lifo);
-            _analysis.InitializeConstraints();
-            _analysis.Analyse();
+            _analysisRD = new ReachingDefinitions(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Lifo);
+            _analysisRD.InitializeConstraints();
+            _analysisRD.Analyse();
 
-            var algo = _analysis._worklistAlgorithm as WorklistLIFOAlgorithm;
+            var algo = _analysisRD._worklistAlgorithm as WorklistLIFOAlgorithm;
             var counter1 = algo.Counter;
 
-            _analysis = new ReachingDefinitions(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Lifo);
-            _analysis.InitializeConstraints();
-            _analysis.Analyse();
+            _analysisRD = new ReachingDefinitions(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Lifo);
+            _analysisRD.InitializeConstraints();
+            _analysisRD.Analyse();
 
-            algo = _analysis._worklistAlgorithm as WorklistLIFOAlgorithm;
+            algo = _analysisRD._worklistAlgorithm as WorklistLIFOAlgorithm;
             var counter2 = algo.Counter;
 
             Assert.True(counter1 > 0, $"Expected Insert() count to be positive for counter1, as program is not empty.");
@@ -61,18 +62,18 @@ namespace Analyses.Test.Analysis.Algorithms
         public void TestSameInsertCountSumIntArray()
         {
 
-            _analysis = new ReachingDefinitions(_graphAddIntegers, Analyses.Algorithms.WorklistImplementation.Lifo);
-            _analysis.InitializeConstraints();
-            _analysis.Analyse();
+            _analysisRD = new ReachingDefinitions(_graphAddIntegers, Analyses.Algorithms.WorklistImplementation.Lifo);
+            _analysisRD.InitializeConstraints();
+            _analysisRD.Analyse();
 
-            var algo = _analysis._worklistAlgorithm as WorklistLIFOAlgorithm;
+            var algo = _analysisRD._worklistAlgorithm as WorklistLIFOAlgorithm;
             var counter1 = algo.Counter;
 
-            _analysis = new ReachingDefinitions(_graphAddIntegers, Analyses.Algorithms.WorklistImplementation.Lifo);
-            _analysis.InitializeConstraints();
-            _analysis.Analyse();
+            _analysisRD = new ReachingDefinitions(_graphAddIntegers, Analyses.Algorithms.WorklistImplementation.Lifo);
+            _analysisRD.InitializeConstraints();
+            _analysisRD.Analyse();
 
-            algo = _analysis._worklistAlgorithm as WorklistLIFOAlgorithm;
+            algo = _analysisRD._worklistAlgorithm as WorklistLIFOAlgorithm;
             var counter2 = algo.Counter;
 
             Assert.True(counter1 > 0, $"Expected Insert() count to be positive for counter1, as program is not empty.");
@@ -81,6 +82,46 @@ namespace Analyses.Test.Analysis.Algorithms
 
             Assert.True(counter1 == 22, $"Expected Insert() count for counter1 to be 22. This is based on observing a previous run. Got {counter1}");
         }
+
+
+        [Fact]
+        public void TestAnalysisCorrectness()
+        {
+
+            _analysisDoS = new DetectionOfSigns(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Lifo);
+            _analysisDoS.InitializeConstraints();
+            _analysisDoS.Analyse();
+
+            var endNode = _graphFibonacci.Nodes.First(node => node.Name == ProgramGraph.EndNode);
+            var constraint = _analysisDoS.FinalConstraintsForNodes[endNode] as DetectionOfSignsConstraint;
+
+            // Simple variable count check
+            Assert.True(constraint.VariableSigns.Count == 4, $"Expected 4 variables in resulting constraint, only given {constraint.VariableSigns.Count}.");
+
+            // Check existence of variables in output
+            Assert.True(constraint.VariableSigns.ContainsKey("f1"), "Variable 'f1' was not found in the resulting constraint.");
+            Assert.True(constraint.VariableSigns.ContainsKey("f2"), "Variable 'f2' was not found in the resulting constraint.");
+            Assert.True(constraint.VariableSigns.ContainsKey("input"), "Variable 'input' was not found in the resulting constraint.");
+            Assert.True(constraint.VariableSigns.ContainsKey("current"), "Variable 'current' was not found in the resulting constraint.");
+
+            // Check expected signs for each variable
+            Assert.True(constraint.VariableSigns["f1"].signs.SetEquals(new HashSet<Sign>() { Sign.Positive }),
+                $"Expected 'f1' to be {{ Positive }}, but got {{ {string.Join(", ", constraint.VariableSigns["f1"].signs)} }}.");
+            Assert.True(constraint.VariableSigns["f2"].signs.SetEquals(new HashSet<Sign>() { Sign.Positive }),
+                $"Expected 'f2' to be {{ Positive }}, but got {{ {string.Join(", ", constraint.VariableSigns["f2"].signs)} }}.");
+            Assert.True(constraint.VariableSigns["input"].signs.SetEquals(new HashSet<Sign>() { Sign.Negative, Sign.Zero, Sign.Positive }),
+                $"Expected 'input' to be {{ Negative, Zero, Positive }}, but got {{ {string.Join(", ", constraint.VariableSigns["input"].signs)} }}.");
+            Assert.True(constraint.VariableSigns["current"].signs.SetEquals(new HashSet<Sign>() { Sign.Zero, Sign.Positive }),
+                $"Expected 'current' to be {{ Zero, Positive }}, but got {{ {string.Join(", ", constraint.VariableSigns["current"].signs)} }}.");
+
+            var algo = _analysisDoS._worklistAlgorithm as WorklistLIFOAlgorithm;
+            var counter = algo.Counter;
+
+            Assert.True(counter > 0, $"Expected Insert() count to be positive for counter, as program is not empty.");
+
+            Assert.True(counter == 70, $"Expected Insert() count for counter to be 22. This is based on observing a previous run. Got {counter}");
+        }
+
 
     }
 }
