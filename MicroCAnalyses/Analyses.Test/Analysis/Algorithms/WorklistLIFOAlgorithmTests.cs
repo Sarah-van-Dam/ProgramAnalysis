@@ -41,15 +41,15 @@ namespace Analyses.Test.Analysis.Algorithms
             _analysisRD.InitializeConstraints();
             _analysisRD.Analyse();
 
-            var algo = _analysisRD._worklistAlgorithm as WorklistLIFOAlgorithm;
-            var counter1 = algo.Counter;
+            var algo = _analysisRD._worklistAlgorithm;
+            var counter1 = algo.BasicActionsNeeded;
 
             _analysisRD = new ReachingDefinitions(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Lifo);
             _analysisRD.InitializeConstraints();
             _analysisRD.Analyse();
 
-            algo = _analysisRD._worklistAlgorithm as WorklistLIFOAlgorithm;
-            var counter2 = algo.Counter;
+            algo = _analysisRD._worklistAlgorithm;
+            var counter2 = algo.BasicActionsNeeded;
 
             Assert.True(counter1 > 0, $"Expected Insert() count to be positive for counter1, as program is not empty.");
             Assert.True(counter2 > 0, $"Expected Insert() count to be positive for counter2, as program is not empty.");
@@ -66,15 +66,15 @@ namespace Analyses.Test.Analysis.Algorithms
             _analysisRD.InitializeConstraints();
             _analysisRD.Analyse();
 
-            var algo = _analysisRD._worklistAlgorithm as WorklistLIFOAlgorithm;
-            var counter1 = algo.Counter;
+            var algo = _analysisRD._worklistAlgorithm;
+            var counter1 = algo.BasicActionsNeeded;
 
             _analysisRD = new ReachingDefinitions(_graphAddIntegers, Analyses.Algorithms.WorklistImplementation.Lifo);
             _analysisRD.InitializeConstraints();
             _analysisRD.Analyse();
 
-            algo = _analysisRD._worklistAlgorithm as WorklistLIFOAlgorithm;
-            var counter2 = algo.Counter;
+            algo = _analysisRD._worklistAlgorithm;
+            var counter2 = algo.BasicActionsNeeded;
 
             Assert.True(counter1 > 0, $"Expected Insert() count to be positive for counter1, as program is not empty.");
             Assert.True(counter2 > 0, $"Expected Insert() count to be positive for counter2, as program is not empty.");
@@ -114,8 +114,8 @@ namespace Analyses.Test.Analysis.Algorithms
             Assert.True(constraint.VariableSigns["current"].signs.SetEquals(new HashSet<Sign>() { Sign.Zero, Sign.Positive }),
                 $"Expected 'current' to be {{ Zero, Positive }}, but got {{ {string.Join(", ", constraint.VariableSigns["current"].signs)} }}.");
 
-            var algo = _analysisDoS._worklistAlgorithm as WorklistLIFOAlgorithm;
-            var counter = algo.Counter;
+            var algo = _analysisDoS._worklistAlgorithm;
+            var counter = algo.BasicActionsNeeded;
 
             Assert.True(counter > 0, $"Expected Insert() count to be positive for counter, as program is not empty.");
 
