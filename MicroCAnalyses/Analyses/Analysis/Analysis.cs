@@ -1,5 +1,6 @@
 using System;
 using Analyses.Algorithms;
+using Analyses.Algorithms.Stack;
 using Analyses.Graph;
 
 namespace Analyses.Analysis
@@ -7,7 +8,7 @@ namespace Analyses.Analysis
     public abstract class Analysis
     {
         protected readonly ProgramGraph _program;
-        protected readonly WorklistAlgorithm _worklistAlgorithm;
+        public readonly WorklistAlgorithm _worklistAlgorithm;
         protected readonly Direction Direction;
 
         public Analysis(ProgramGraph programGraph, Direction direction,
@@ -18,7 +19,7 @@ namespace Analyses.Analysis
             _worklistAlgorithm = worklistImplementation switch
             {
                 WorklistImplementation.SortedIteration => new SortedIterationWorklist(Direction),
-                WorklistImplementation.Lifo => throw new NotImplementedException("Lifo worklist not implemented"),
+                WorklistImplementation.Lifo => new WorklistLIFOAlgorithm(),
                 WorklistImplementation.Fifo => throw new NotImplementedException("Fifo worklist not implemented"),
                 _ => throw new ArgumentOutOfRangeException(nameof(worklistImplementation), worklistImplementation, null)
             };

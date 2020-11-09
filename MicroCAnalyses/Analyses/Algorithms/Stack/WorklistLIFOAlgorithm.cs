@@ -7,7 +7,12 @@ namespace Analyses.Algorithms.Stack
 {
 	class WorklistLIFOAlgorithm : WorklistAlgorithm
 	{
-		private Stack<Node> stack;
+		private Stack<Node> stack = new Stack<Node>();
+
+		/// <summary>
+		/// The amount of times <see cref="Insert(Node)"/> has been called.
+		/// </summary>
+		public ulong Counter { get; private set; }
 
 		public override bool Empty()
 			=> stack.Count == 0;
@@ -16,7 +21,10 @@ namespace Analyses.Algorithms.Stack
 			=> stack.Pop();
 
 		public override void Insert(Node q)
-			=> stack.Push(q);
+		{
+			stack.Push(q);
+			Counter++;
+		}
 
 		/*
 		 * TO-DO:
