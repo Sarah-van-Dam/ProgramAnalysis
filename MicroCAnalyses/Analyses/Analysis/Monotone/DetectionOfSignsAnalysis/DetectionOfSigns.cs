@@ -25,13 +25,12 @@ namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
                 FinalConstraintsForNodes[node] = new DetectionOfSignsConstraint();
             }
 
-            var startingConstraints =
-                FinalConstraintsForNodes[_program.Nodes.Single(n => n.Name == ProgramGraph.StartNode)] as
-                    DetectionOfSignsConstraint;
-
-            foreach (string variable in _program.VariableNames)
+            foreach (var kvp in FinalConstraintsForNodes)
             {
-                startingConstraints.VariableSigns[variable] = (variable, new HashSet<Sign>());
+                foreach (string variable in _program.VariableNames)
+                {
+                    (kvp.Value as DetectionOfSignsConstraint).VariableSigns[variable] = (variable, new HashSet<Sign>());
+                }
             }
         }
 
