@@ -4,6 +4,7 @@ namespace Analyses.Algorithms
     {
         SortedIteration,
         Lifo,
-        Fifo
+        Fifo,
+        DepthFirstPostOrder
     }
 }
