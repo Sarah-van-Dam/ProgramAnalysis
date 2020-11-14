@@ -89,7 +89,8 @@ namespace Analyses
                     break;
             }
             
-
+            
+            
             var rd = new ReachingDefinitions(pg);
             rd.Analyse();
 
@@ -106,8 +107,6 @@ namespace Analyses
             //         statements = s.Item;
             //         break;
             // }
-            
-            Console.WriteLine("Hello World!");
         }
     }
 }
