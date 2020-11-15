@@ -145,5 +145,139 @@ namespace Analyses.Test.Integration
                 Assert.Equal(expectedConstraint,live.FinalConstraintsForNodes[key]);
             }
         }
+
+        [Fact]
+        public void TestDangerousVariablesAnalysis()
+        {
+            var expectedResult = new Dictionary<Node, DangerousVariablesConstraint>()
+            {
+                {
+                    new Node("q_start"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { }
+                    }
+                },
+                {
+                    new Node("q1"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { }
+                    }
+                },
+                {
+                    new Node("q2"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { }
+                    }
+                },
+                {
+                    new Node("q3"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { }
+                    }
+                },
+                {
+                    new Node("q4"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> {"current" }
+                    }
+                },
+                {
+                    new Node("q5"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> {"current", "f1" }
+                    }
+                },
+                {
+                    new Node("q6"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> {"current", "f1", "f2" }
+                    }
+                },
+                {
+                    new Node("q7"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> {"current", "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q8"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q9"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> {"current", "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q10"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q11"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> {"current" }
+                    }
+                },
+                {
+                    new Node("q12"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { "f1", "current", "input" }
+                    }
+                },
+                {
+                    new Node("q13"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { "current", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q14"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { "current", "f1", "f2", "input" }
+                    }
+                },
+                {
+                    new Node("q_end"),
+                    new DangerousVariablesConstraint()
+                    {
+                        DangerousVariables = new HashSet<string> { }
+                    }
+                },
+            };
+
+            var ast = Parser.parse(Fibonacci);
+            var pg = new ProgramGraph(ast);
+            var live = new DangerousVariables(pg);
+
+            //Act
+            live.Analyse();
+
+            //Assert
+            Assert.Equal(expectedResult.Keys, live.FinalConstraintsForNodes.Keys);
+            foreach (var (key, expectedConstraint) in expectedResult)
+            {
+                Assert.Equal(expectedConstraint, live.FinalConstraintsForNodes[key]);
+            }
+        }
     }
 }
