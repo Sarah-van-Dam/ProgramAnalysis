@@ -155,112 +155,112 @@ namespace Analyses.Test.Integration
                     new Node("q_start"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { }
+                        DangerousVariables = new HashSet<string> { "current", "f1", "f2", "input" }
                     }
                 },
                 {
                     new Node("q1"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { }
+                        DangerousVariables = new HashSet<string> { "current", "f1", "f2", "input" }
                     }
                 },
                 {
                     new Node("q2"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { }
+                        DangerousVariables = new HashSet<string> { "current", "f1", "f2", "input" }
                     }
                 },
                 {
                     new Node("q3"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { }
+                        DangerousVariables = new HashSet<string> { "current", "f1", "f2", "input" }
                     }
                 },
                 {
                     new Node("q4"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> {"current" }
+                        DangerousVariables = new HashSet<string> {"current", "f1", "f2", "input" }
                     }
                 },
                 {
                     new Node("q5"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> {"current", "f1" }
+                        DangerousVariables = new HashSet<string> { "current", "input", "f2" }
                     }
                 },
                 {
                     new Node("q6"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> {"current", "f1", "f2" }
+                        DangerousVariables = new HashSet<string> { "current", "input" }
                     }
                 },
                 {
                     new Node("q7"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> {"current", "f1", "f2", "input" }
+                        DangerousVariables = new HashSet<string> { "current", "input" }
                     }
                 },
                 {
                     new Node("q8"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { "f1", "f2", "input" }
+                        DangerousVariables = new HashSet<string> { "current", "input" }
                     }
                 },
                 {
                     new Node("q9"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> {"current", "f1", "f2", "input" }
+                        DangerousVariables = new HashSet<string> { "current", "input" }
                     }
                 },
                 {
                     new Node("q10"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { "f1", "f2", "input" }
+                        DangerousVariables = new HashSet<string> {  "current", "input" }
                     }
                 },
                 {
                     new Node("q11"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> {"current" }
+                        DangerousVariables = new HashSet<string> { "current", "input" }
                     }
                 },
                 {
                     new Node("q12"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { "f1", "current", "input" }
+                        DangerousVariables = new HashSet<string> { "input" }
                     }
                 },
                 {
                     new Node("q13"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { "current", "f2", "input" }
+                        DangerousVariables = new HashSet<string> { "input" }
                     }
                 },
                 {
                     new Node("q14"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { "current", "f1", "f2", "input" }
+                        DangerousVariables = new HashSet<string> { "input" }
                     }
                 },
                 {
                     new Node("q_end"),
                     new DangerousVariablesConstraint()
                     {
-                        DangerousVariables = new HashSet<string> { }
+                        DangerousVariables = new HashSet<string> { "current", "input" }
                     }
                 },
             };
