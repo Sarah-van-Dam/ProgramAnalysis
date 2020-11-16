@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Analyses.Analysis.Distributive
@@ -17,9 +18,9 @@ namespace Analyses.Analysis.Distributive
         public IConstraints Clone()
         {
             var clonedConstraints = new DangerousVariablesConstraint();
-            foreach (var variable in StronglyLivedVariables)
+            foreach (var variable in DangerousVariables)
             {
-                clonedConstraints.StronglyLivedVariables.Add(variable);
+                clonedConstraints.DangerousVariables.Add(variable);
             }
 
             return clonedConstraints;
@@ -27,7 +28,12 @@ namespace Analyses.Analysis.Distributive
 
         public bool IsSubset(IConstraints other)
         {
-            throw new NotImplementedException();
+            if (!(other is DangerousVariablesConstraint otherDangerousVariableConstraint))
+            {
+                return false;
+            }
+            var dangerousVariablesIsSubset = DangerousVariables.All(l => otherDangerousVariableConstraint.DangerousVariables.Contains(l));
+            return dangerousVariablesIsSubset;
         }
 
         public bool IsSuperSet(IConstraints other)
@@ -37,22 +43,26 @@ namespace Analyses.Analysis.Distributive
 
         public void Join(IConstraints other)
         {
-            throw new NotImplementedException();
+            if (!(other is DangerousVariablesConstraint dangerousVariableConstraint))
+            {
+                throw new Exception($"Join operator called with constraint type that was different from {nameof(FaintVariableConstraint)}");
+            }
+            DangerousVariables.UnionWith(dangerousVariableConstraint.DangerousVariables);
         }
 
         public override bool Equals(object obj)
         {
-            if (obj == null || !(obj is FaintVariableConstraint other))
+            if (obj == null || !(obj is DangerousVariablesConstraint other))
             {
                 return false;
             }
 
-            return StronglyLivedVariables.SetEquals(other.StronglyLivedVariables);
+            return DangerousVariables.SetEquals(other.DangerousVariables);
         }
 
         public override int GetHashCode()
         {
-            return StronglyLivedVariables.GetHashCode(); //Only used in a non readonly fashion in tests
+            return DangerousVariables.GetHashCode(); //Only used in a non readonly fashion in tests
         }
     }
 }

@@ -79,7 +79,7 @@ namespace Analyses.Analysis
                     freeVariables.UnionWith(FreeVariables(multiply.Item2));
                     break;
                 case MicroCTypes.arithmeticExpression.Number number:
-                    // A number isn't a free variable
+                    // A number isn't a free variable -> ?? mta
                     break;
                 case MicroCTypes.arithmeticExpression.Plus plus:
                     freeVariables.UnionWith(FreeVariables(plus.Item1));

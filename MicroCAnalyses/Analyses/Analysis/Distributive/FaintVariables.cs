@@ -11,7 +11,7 @@ namespace Analyses.Analysis.Distributive
     {
         private readonly FreeVariablesAnalysis _freeVariablesAnalysis;
         
-        public FaintVariables(ProgramGraph programGraph, WorklistImplementation worklistImplementation = WorklistImplementation.SortedIteration) : base(programGraph, Direction.Backwards, worklistImplementation)
+        public FaintVariables(ProgramGraph programGraph, WorklistImplementation worklistImplementation = WorklistImplementation.SortedIteration) : base(programGraph, Direction.Forward, worklistImplementation)
         {
             JoinOperator = Operator.Union;
             _freeVariablesAnalysis = new FreeVariablesAnalysis();
