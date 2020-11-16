@@ -77,7 +77,7 @@ namespace Analyses.Analysis.Distributive
                 case IntAssignment intAssignment:
                     var freeVariableIntAssignment = _freeVariablesAnalysis.FreeVariables(intAssignment.RightHandSide);
                     // If the assignment free variable exists - add the dangerous variable
-                    if (dangerousVariableConstraint.DangerousVariables.Contains(freeVariableIntAssignment.First()))
+                    if (dangerousVariableConstraint.DangerousVariables.Contains(freeVariableIntAssignment.FirstOrDefault()))
                     {
                         dangerousVariableConstraint.DangerousVariables.UnionWith(new HashSet<string> { intAssignment.VariableName });
                     }
