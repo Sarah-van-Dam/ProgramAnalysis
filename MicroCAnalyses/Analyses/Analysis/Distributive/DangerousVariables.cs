@@ -24,15 +24,6 @@ namespace Analyses.Analysis.Distributive
         {
             var startNode = _program.Nodes.Single(n => n.Name == ProgramGraph.StartNode);
 
-            // Handles all nodes except the start node
-            foreach (var node in _program.Nodes.Except(new[] { startNode }))
-            {
-                FinalConstraintsForNodes[node] = new DangerousVariablesConstraint
-                {
-                    DangerousVariables = new HashSet<string>()
-                };
-            }
-
             // Handle the start node
             var temp = new HashSet<string>();
             foreach (var variableName in _program.VariableNames)
@@ -45,6 +36,14 @@ namespace Analyses.Analysis.Distributive
                 DangerousVariables = new HashSet<string>(temp)
             };
 
+            // Handles all nodes except the start node
+            foreach (var node in _program.Nodes.Except(new[] { startNode }))
+            {
+                FinalConstraintsForNodes[node] = new DangerousVariablesConstraint
+                {
+                    DangerousVariables = new HashSet<string>()
+                };
+            }
         }
 
         protected override void AnalysisFunction(Edge edge, IConstraints constraints)
