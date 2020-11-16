@@ -90,24 +90,20 @@ namespace Analyses.Analysis.Distributive
                     //don't change the set
                     break;
                 case ReadArray readArray:
+                    //TODO: this might need changing
                     var freeVariableReadArrayIndex = _freeVariablesAnalysis.FreeVariables(readArray.Index);
                     // If the index free variable exists - add the dangerous variable
                     if (dangerousVariableConstraint.DangerousVariables.Contains(freeVariableReadArrayIndex.First()))
                     {
                         dangerousVariableConstraint.DangerousVariables.UnionWith(new HashSet<string> { readArray.ArrayName });
                     }
-                    else
-                    {
-                        // is the assignment free variable does not exist - remove the dangerous variable
-                        dangerousVariableConstraint.DangerousVariables.Remove(readArray.ArrayName);
-                    }
                     break;
                 case ReadRecordMember readRecordMember:
                     var recordName = $"{readRecordMember.RecordName}.{readRecordMember.RecordMember}";
-                    dangerousVariableConstraint.DangerousVariables.Remove(recordName);
+                    dangerousVariableConstraint.DangerousVariables.UnionWith(new HashSet<string> { recordName });
                     break;
                 case ReadVariable readVariable:
-                    dangerousVariableConstraint.DangerousVariables.Remove(readVariable.VariableName);
+                    dangerousVariableConstraint.DangerousVariables.UnionWith(new HashSet<string> { readVariable.VariableName });
                     break;
                 case RecordAssignment recordAssignment:
                     var recordFst = $"{recordAssignment.RecordName}.{RecordMember.Fst}";
