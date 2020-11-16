@@ -45,7 +45,7 @@ namespace Analyses.Analysis.Distributive
         {
             if (!(other is DangerousVariablesConstraint dangerousVariableConstraint))
             {
-                throw new Exception($"Join operator called with constraint type that was different from {nameof(FaintVariableConstraint)}");
+                throw new Exception($"Join operator called with constraint type that was different from {nameof(DangerousVariablesConstraint)}");
             }
             DangerousVariables.UnionWith(dangerousVariableConstraint.DangerousVariables);
         }
