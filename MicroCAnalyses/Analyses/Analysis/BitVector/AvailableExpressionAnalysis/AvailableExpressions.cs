@@ -10,9 +10,9 @@ namespace Analyses.Analysis.BitVector.AvailableExpressionAnalysis
 {
     public class AvailableExpressions : BitVectorFramework
     {
-        private FreeVariablesAnalysis _freeVariables;
+        private readonly FreeVariablesAnalysis _freeVariables;
 
-        public AvailableExpressions(ProgramGraph programGraph, WorklistImplementation worklistImplementation)
+        public AvailableExpressions(ProgramGraph programGraph, WorklistImplementation worklistImplementation = WorklistImplementation.SortedIteration)
             : base(programGraph, Direction.Forward, worklistImplementation)
         {
             JoinOperator = Operator.Intersection;
@@ -147,7 +147,9 @@ namespace Analyses.Analysis.BitVector.AvailableExpressionAnalysis
             }
             
             //For first node set constraints to empty set
-            throw new System.NotImplementedException();
+            FinalConstraintsForNodes[_program.Nodes.Single(n => n.Name == ProgramGraph.StartNode)] = new
+                AvailableExpressionConstraints(new HashSet<MicroCTypes.arithmeticExpression>(),
+                    new HashSet<MicroCTypes.booleanExpression>());
         }
 
         private (HashSet<MicroCTypes.arithmeticExpression> arithmeticExpressions, 
@@ -285,28 +287,34 @@ namespace Analyses.Analysis.BitVector.AvailableExpressionAnalysis
                     availableExpressions.UnionWith(AE(arrayMember.Item2));
                     break;
                 case MicroCTypes.arithmeticExpression.Divide divide:
+                    availableExpressions.Add(divide);
                     availableExpressions.UnionWith(AE(divide.Item1));
                     availableExpressions.UnionWith(AE(divide.Item2));
                     break;
                 case MicroCTypes.arithmeticExpression.Minus minus:
+                    availableExpressions.Add(minus);
                     availableExpressions.UnionWith(AE(minus.Item1));
                     availableExpressions.UnionWith(AE(minus.Item2));
                     break;
                 case MicroCTypes.arithmeticExpression.Modulo modulo:
+                    availableExpressions.Add(modulo);
                     availableExpressions.UnionWith(AE(modulo.Item1));
                     availableExpressions.UnionWith(AE(modulo.Item2));
                     break;
                 case MicroCTypes.arithmeticExpression.Multiply multiply:
+                    availableExpressions.Add(multiply);
                     availableExpressions.UnionWith(AE(multiply.Item1));
                     availableExpressions.UnionWith(AE(multiply.Item2));
                     break;
                 case MicroCTypes.arithmeticExpression.Number number:
                     break;
                 case MicroCTypes.arithmeticExpression.Plus plus:
+                    availableExpressions.Add(plus);
                     availableExpressions.UnionWith(AE(plus.Item1));
                     availableExpressions.UnionWith(AE(plus.Item2));
                     break;
                 case MicroCTypes.arithmeticExpression.Power power:
+                    availableExpressions.Add(power);
                     availableExpressions.UnionWith(AE(power.Item1));
                     availableExpressions.UnionWith(AE(power.Item2));
                     break;
@@ -323,16 +331,15 @@ namespace Analyses.Analysis.BitVector.AvailableExpressionAnalysis
 
         private void KillAssignment(AvailableExpressionConstraints availableExpressionConstraints, string variableName)
         {
+            var toRemoveArithmetic = availableExpressionConstraints.AvailableArithmeticExpressions
+                .Where(ae => _freeVariables.FreeVariables(ae).Contains(variableName)).ToList(); 
             availableExpressionConstraints.AvailableArithmeticExpressions
-                .ExceptWith(
-                    availableExpressionConstraints.AvailableArithmeticExpressions
-                        .Where(ae => _freeVariables.FreeVariables(ae).Contains(variableName))
-                );
+                .ExceptWith(toRemoveArithmetic);
+
+            var toRemoveBoolean = availableExpressionConstraints.AvailableBooleanExpressions
+                .Where(ae => _freeVariables.FreeVariables(ae).Contains(variableName)).ToList();
             availableExpressionConstraints.AvailableBooleanExpressions
-                .ExceptWith(
-                    availableExpressionConstraints.AvailableBooleanExpressions
-                        .Where(ae => _freeVariables.FreeVariables(ae).Contains(variableName))
-                );
+                .ExceptWith(toRemoveBoolean);
         }
 
         private void GenerateAssignment(AvailableExpressionConstraints availableExpressionConstraints,

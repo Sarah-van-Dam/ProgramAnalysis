@@ -11,8 +11,8 @@ namespace Analyses.Analysis.BitVector.AvailableExpressionAnalysis
         
         public AvailableExpressionConstraints(HashSet<MicroCTypes.arithmeticExpression> arithmeticSubExpressions, HashSet<MicroCTypes.booleanExpression> booleanSubExpressions)
         {
-            AvailableArithmeticExpressions = arithmeticSubExpressions;
-            AvailableBooleanExpressions = booleanSubExpressions;
+            AvailableArithmeticExpressions = new HashSet<MicroCTypes.arithmeticExpression>(arithmeticSubExpressions);
+            AvailableBooleanExpressions = new HashSet<MicroCTypes.booleanExpression>(booleanSubExpressions);
         }
 
         /// <summary>
