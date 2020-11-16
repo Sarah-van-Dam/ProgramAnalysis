@@ -1,5 +1,6 @@
 using System;
 using Analyses.Algorithms;
+using Analyses.Algorithms.Queue;
 using Analyses.Algorithms.Stack;
 using Analyses.Graph;
 
@@ -20,7 +21,7 @@ namespace Analyses.Analysis
             {
                 WorklistImplementation.SortedIteration => new SortedIterationWorklist(Direction),
                 WorklistImplementation.Lifo => new WorklistLIFOAlgorithm(),
-                WorklistImplementation.Fifo => throw new NotImplementedException("Fifo worklist not implemented"),
+                WorklistImplementation.Fifo => new WorklistFIFOAlgorithm(),
                 _ => throw new ArgumentOutOfRangeException(nameof(worklistImplementation), worklistImplementation, null)
             };
         }
