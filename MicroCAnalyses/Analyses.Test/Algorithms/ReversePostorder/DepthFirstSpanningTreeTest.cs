@@ -24,6 +24,21 @@ namespace Analyses.Test.Algorithms.ReversePostorder
             
             Assert.Equal(expectedEdges, spanningTree.Edges);
         }
+        
+        [Fact]
+        public void TestCreationOfNaturalOrderingWorklist()
+        {
+            var (programGraph, edges) = ConstructTestProgramGraph();
+            //var expectedEdges = new List<Edge>
+            //{
+            //    edges[0], edges[1], edges[2], edges[3], edges[4], edges[6], edges[5], edges[8]
+            //};
+            
+            
+            var algorithm = new NaturalOrderingWorklist(programGraph);
+            
+            //Assert.Equal(expectedEdges, spanningTree.Edges);
+        }
 
 
         private static (ProgramGraph programGraph, List<Edge> edgesUsedInPg) ConstructTestProgramGraph()
