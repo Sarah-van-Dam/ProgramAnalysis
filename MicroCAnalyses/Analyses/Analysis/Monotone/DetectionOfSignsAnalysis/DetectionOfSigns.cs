@@ -10,7 +10,7 @@ using Analyses.Algorithms;
 
 namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 {
-    class DetectionOfSigns : DistributiveFramework
+    public class DetectionOfSigns : DistributiveFramework
     {
         public DetectionOfSigns(ProgramGraph graph,
             WorklistImplementation worklistImplementation = WorklistImplementation.SortedIteration) : base(graph,
