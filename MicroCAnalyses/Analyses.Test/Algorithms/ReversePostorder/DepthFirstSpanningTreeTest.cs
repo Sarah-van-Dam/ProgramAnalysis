@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Analyses.Algorithms.ReversePostorder;
 using Analyses.Analysis.Actions;
 using Analyses.Graph;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Analyses.Test.Algorithms.ReversePostorder
 {
@@ -41,6 +43,19 @@ namespace Analyses.Test.Algorithms.ReversePostorder
         }
 
 
+        [Fact]
+        public void TestProgramWithNestedLoops()
+        {
+            var program = "int i; int j; i := 1; j; := 0; while(i < 5){i := j+1; while(j < 10){ j:= j+1;} j := 0; } j := 11;";
+            var pg = new ProgramGraph(Parser.parse(program));
+            
+            var algorithm = new NaturalOrderingWorklist(pg);
+
+            var stop = "stop";
+
+        }
+        
+        
         private static (ProgramGraph programGraph, List<Edge> edgesUsedInPg) ConstructTestProgramGraph()
         {
             var variableNames = new HashSet<string>{"x", "y"};
