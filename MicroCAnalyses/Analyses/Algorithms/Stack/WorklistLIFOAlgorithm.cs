@@ -5,6 +5,11 @@ namespace Analyses.Algorithms.Stack
 {
 	class WorklistLIFOAlgorithm : WorklistAlgorithm
 	{
+		public WorklistLIFOAlgorithm()
+		{
+			BasicActionsNeeded = 0;
+		}
+		
 		private Stack<Node> stack = new Stack<Node>();
 
 		public override bool Empty()
