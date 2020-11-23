@@ -273,14 +273,14 @@ namespace Analyses.Graph
 
         private void AstToProgramGraph(MicroCTypes.statement.If @if, Node qBeforeIf, Node qAfterIf)
         {
-            Node qFresh = new Node(NodePrefix + Nodes.Count);
+            var qFresh = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh);
-            Edge edge1 = new Edge(qBeforeIf,
+            var edge1 = new Edge(qBeforeIf,
                 new Condition() {Cond = @if.Item1, GraphvizSyntax = AstExtensions.AstToString(@if.Item1)}, qFresh);
             Edges.Add(edge1);
             AstToProgramGraph(@if.Item2, qFresh, qAfterIf);
-            Edge edge2 = new Edge(qBeforeIf,
-                new Condition() {Cond = @if.Item1, GraphvizSyntax = $"!({AstExtensions.AstToString(@if.Item1)})"}, qAfterIf);
+            var edge2 = new Edge(qBeforeIf,
+                new Condition() {Cond = MicroCTypes.booleanExpression.NewNot(@if.Item1), GraphvizSyntax = $"!({AstExtensions.AstToString(@if.Item1)})"}, qAfterIf);
             Edges.Add(edge2);
         }
 
@@ -295,7 +295,7 @@ namespace Analyses.Graph
             Node qFresh2 = new Node(NodePrefix + Nodes.Count);
             Nodes.Add(qFresh2);
             Edge edge2 = new Edge(qBeforeIfE,
-                new Condition() {Cond = ifElse.Item1, GraphvizSyntax = $"!({AstExtensions.AstToString(ifElse.Item1)})"}, qFresh2);
+                new Condition() {Cond = MicroCTypes.booleanExpression.NewNot(ifElse.Item1), GraphvizSyntax = $"!({AstExtensions.AstToString(ifElse.Item1)})"}, qFresh2);
             Edges.Add(edge2);
             AstToProgramGraph(ifElse.Item3, qFresh2, qAfterIfE);
         }
@@ -309,7 +309,7 @@ namespace Analyses.Graph
             Edges.Add(edge1);
             AstToProgramGraph(@while.Item2, qFresh, qBeforeWhile);
             Edge edge2 = new Edge(qBeforeWhile,
-                new Condition() {Cond = @while.Item1, GraphvizSyntax = $"!({AstExtensions.AstToString(@while.Item1)})"},
+                new Condition() {Cond = MicroCTypes.booleanExpression.NewNot(@while.Item1), GraphvizSyntax = $"!({AstExtensions.AstToString(@while.Item1)})"},
                 qAfterWhile);
             Edges.Add(edge2);
         }
