@@ -21,8 +21,8 @@ namespace Benchmark
 		private const char VerticalBorder = '|';
 		private const char CornerBorder = '+';
 
-		private const byte LeftColumnWidth = 18;
-		private const byte ResultColumnWidth = 14;
+		private const byte LeftColumnWidth = 22;
+		private const byte ResultColumnWidth = 18;
 
 		/// <summary>
 		/// Outputs a text-table with analyses and their basic actions needed for each worklist implementation.
@@ -32,22 +32,22 @@ namespace Benchmark
 		{
 			var divider = GetDivider();
 			Debug.Print(divider);
-			Debug.Print(HorizontalBorder + " Analysis ".PadRight(LeftColumnWidth) + HorizontalBorder +
-				string.Join(HorizontalBorder, Enum.GetNames(typeof(WorklistImplementation)).Select(name => $" {name} ".PadRight(ResultColumnWidth))));
+			Debug.Print(VerticalBorder + " Analysis ".PadRight(LeftColumnWidth) + VerticalBorder +
+				string.Join("", Enum.GetNames(typeof(WorklistImplementation)).Select(name => $" {name} ".PadRight(ResultColumnWidth) + VerticalBorder)));
 			Debug.Print(divider);
 			StringBuilder rowBuilder = new StringBuilder();
 			foreach (AnalysisImplementation analysisImplementation in Enum.GetValues(typeof(AnalysisImplementation)))
 			{
-				rowBuilder.Append(HorizontalBorder + (' ' + Enum.GetName(typeof(AnalysisImplementation), analysisImplementation) + ' ').PadRight(LeftColumnWidth) +
-					HorizontalBorder);
+				rowBuilder.Append(VerticalBorder + (' ' + Enum.GetName(typeof(AnalysisImplementation), analysisImplementation) + ' ').PadRight(LeftColumnWidth) +
+					VerticalBorder);
 				foreach (WorklistImplementation worklistImplementation in Enum.GetValues(typeof(WorklistImplementation)))
 				{
 					Analysis analysis = GetAnalysis(analysisImplementation, programGraph, worklistImplementation);
 					analysis.Analyse();
-					rowBuilder.Append($" {analysis._worklistAlgorithm.BasicActionsNeeded} ".PadRight(ResultColumnWidth) + HorizontalBorder);
-					Debug.Print(rowBuilder.ToString());
-					rowBuilder.Clear();
+					rowBuilder.Append($" {analysis._worklistAlgorithm.BasicActionsNeeded} ".PadRight(ResultColumnWidth) + VerticalBorder);
 				}
+				Debug.Print(rowBuilder.ToString());
+				rowBuilder.Clear();
 			}
 			Debug.Print(divider);
 		}
@@ -59,8 +59,8 @@ namespace Benchmark
 		private string GetDivider()
 		{
 			StringBuilder builder = new StringBuilder();
-			builder.Append(CornerBorder + new string(HorizontalBorder, LeftColumnWidth));
-			var columnsCount = Enum.GetValues(typeof(Direction)).Length;
+			builder.Append(CornerBorder + new string(HorizontalBorder, LeftColumnWidth) + CornerBorder);
+			var columnsCount = Enum.GetValues(typeof(WorklistImplementation)).Length;
 			var columnAppend = new string(HorizontalBorder, ResultColumnWidth) + CornerBorder;
 			for (var column = 0; column < columnsCount; column++)
 				builder.Append(columnAppend);
