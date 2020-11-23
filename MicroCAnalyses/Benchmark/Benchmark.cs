@@ -44,16 +44,16 @@ namespace Benchmark
 				foreach (WorklistImplementation worklistImplementation in Enum.GetValues(typeof(WorklistImplementation)))
 				{
 					string result;
-					try
-					{
+					//try
+					//{
 						Analysis analysis = GetAnalysis(analysisImplementation, programGraph, worklistImplementation);
 						analysis.Analyse();
 						result = analysis._worklistAlgorithm.BasicActionsNeeded.ToString();
-					} catch (Exception ex)
+					/*} catch (Exception ex)
 					{
 						errors.Add(ex);
 						result = "Error";
-					}
+					}*/
 					rowBuilder.Append($" {result} ".PadRight(ResultColumnWidth) + VerticalBorder);
 				}
 				Debug.Print(rowBuilder.ToString());
