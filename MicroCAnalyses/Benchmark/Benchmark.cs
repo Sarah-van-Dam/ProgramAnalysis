@@ -36,20 +36,34 @@ namespace Benchmark
 				string.Join("", Enum.GetNames(typeof(WorklistImplementation)).Select(name => $" {name} ".PadRight(ResultColumnWidth) + VerticalBorder)));
 			Debug.Print(divider);
 			StringBuilder rowBuilder = new StringBuilder();
+			List<Exception> errors = new List<Exception>();
 			foreach (AnalysisImplementation analysisImplementation in Enum.GetValues(typeof(AnalysisImplementation)))
 			{
 				rowBuilder.Append(VerticalBorder + (' ' + Enum.GetName(typeof(AnalysisImplementation), analysisImplementation) + ' ').PadRight(LeftColumnWidth) +
 					VerticalBorder);
 				foreach (WorklistImplementation worklistImplementation in Enum.GetValues(typeof(WorklistImplementation)))
 				{
-					Analysis analysis = GetAnalysis(analysisImplementation, programGraph, worklistImplementation);
-					analysis.Analyse();
-					rowBuilder.Append($" {analysis._worklistAlgorithm.BasicActionsNeeded} ".PadRight(ResultColumnWidth) + VerticalBorder);
+					string result;
+					try
+					{
+						Analysis analysis = GetAnalysis(analysisImplementation, programGraph, worklistImplementation);
+						analysis.Analyse();
+						result = analysis._worklistAlgorithm.BasicActionsNeeded.ToString();
+					} catch (Exception ex)
+					{
+						errors.Add(ex);
+						result = "Error";
+					}
+					rowBuilder.Append($" {result} ".PadRight(ResultColumnWidth) + VerticalBorder);
 				}
 				Debug.Print(rowBuilder.ToString());
 				rowBuilder.Clear();
 			}
 			Debug.Print(divider);
+			if (errors.Count > 0)
+			{
+				Debug.Print("Error(s):\n" + string.Join("\n", errors.Select(err => err.Message)));
+			}
 		}
 		
 		/// <summary>
