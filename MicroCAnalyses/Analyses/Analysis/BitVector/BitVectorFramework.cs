@@ -52,6 +52,11 @@ namespace Analyses.Analysis.BitVector
             }
         }
 
+        public override void PrintResult()
+        {
+            throw new System.NotImplementedException();
+        }
+
         private KeyValuePair<Node, IConstraints> GetConstraintsOfNode(string toNodeName)
         {
             return FinalConstraintsForNodes
