@@ -10,6 +10,7 @@ namespace Analyses.Analysis
 		ReachingDefinitions,
 		DangerousVariables,
 		FaintVariables,
-		DetectionOfSigns
+		DetectionOfSigns,
+		AvailableExpressions
 	}
 }

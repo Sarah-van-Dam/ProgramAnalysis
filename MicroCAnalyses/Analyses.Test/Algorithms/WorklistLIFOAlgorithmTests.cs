@@ -1,21 +1,24 @@
-using System.Collections.Generic;
-using System.Linq;
+﻿using Analyses.Algorithms.Stack;
 using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Analysis.Monotone.DetectionOfSignsAnalysis;
 using Analyses.Graph;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Xunit;
 
-namespace Analyses.Test.Analysis.Algorithms
+namespace Analyses.Test.Algorithms
 {
-    public class WorklistFIFOAlgorithmTests
-    {
+	public class WorklistLIFOAlgorithmTests
+	{
+
         private ReachingDefinitions _analysisRD;
         private DetectionOfSigns _analysisDoS;
         private readonly ProgramGraph _graphFibonacci;
         private readonly ProgramGraph _graphAddIntegers;
-        
-        
-        public WorklistFIFOAlgorithmTests()
+
+        public WorklistLIFOAlgorithmTests()
         {
             _graphFibonacci = new ProgramGraph(
                 Parser.parse(
@@ -34,14 +37,14 @@ namespace Analyses.Test.Analysis.Algorithms
         public void TestSameInsertCountFibonacci()
         {
 
-            _analysisRD = new ReachingDefinitions(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Fifo);
+            _analysisRD = new ReachingDefinitions(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Lifo);
             _analysisRD.InitializeConstraints();
             _analysisRD.Analyse();
 
             var algo = _analysisRD._worklistAlgorithm;
             var counter1 = algo.BasicActionsNeeded;
 
-            _analysisRD = new ReachingDefinitions(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Fifo);
+            _analysisRD = new ReachingDefinitions(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Lifo);
             _analysisRD.InitializeConstraints();
             _analysisRD.Analyse();
 
@@ -52,21 +55,21 @@ namespace Analyses.Test.Analysis.Algorithms
             Assert.True(counter2 > 0, $"Expected Insert() count to be positive for counter2, as program is not empty.");
             Assert.True(counter1 == counter2, $"Expected Insert() count to be identical for both executions of the program. Got ({counter1}, {counter2})");
 
-            Assert.True(counter1 == 37, $"Expected Insert() count for counter1 to be 37. This is based on observing a previous run. Got {counter1}");
+            Assert.True(counter1 == 70, $"Expected Insert() count for counter1 to be 70. This is based on observing a previous run. Got {counter1}");
         }
         
         [Fact]
         public void TestSameInsertCountSumIntArray()
         {
 
-            _analysisRD = new ReachingDefinitions(_graphAddIntegers, Analyses.Algorithms.WorklistImplementation.Fifo);
+            _analysisRD = new ReachingDefinitions(_graphAddIntegers, Analyses.Algorithms.WorklistImplementation.Lifo);
             _analysisRD.InitializeConstraints();
             _analysisRD.Analyse();
 
             var algo = _analysisRD._worklistAlgorithm;
             var counter1 = algo.BasicActionsNeeded;
 
-            _analysisRD = new ReachingDefinitions(_graphAddIntegers, Analyses.Algorithms.WorklistImplementation.Fifo);
+            _analysisRD = new ReachingDefinitions(_graphAddIntegers, Analyses.Algorithms.WorklistImplementation.Lifo);
             _analysisRD.InitializeConstraints();
             _analysisRD.Analyse();
 
@@ -77,14 +80,15 @@ namespace Analyses.Test.Analysis.Algorithms
             Assert.True(counter2 > 0, $"Expected Insert() count to be positive for counter2, as program is not empty.");
             Assert.True(counter1 == counter2, $"Expected Insert() count to be identical for both executions of the program. Got ({counter1}, {counter2})");
 
-            Assert.True(counter1 == 15, $"Expected Insert() count for counter1 to be 15. This is based on observing a previous run. Got {counter1}");
+            Assert.True(counter1 == 22, $"Expected Insert() count for counter1 to be 22. This is based on observing a previous run. Got {counter1}");
         }
+
 
         [Fact]
         public void TestAnalysisCorrectness()
         {
 
-            _analysisDoS = new DetectionOfSigns(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Fifo);
+            _analysisDoS = new DetectionOfSigns(_graphFibonacci, Analyses.Algorithms.WorklistImplementation.Lifo);
             _analysisDoS.InitializeConstraints();
             _analysisDoS.Analyse();
 
@@ -115,12 +119,9 @@ namespace Analyses.Test.Analysis.Algorithms
 
             Assert.True(counter > 0, $"Expected Insert() count to be positive for counter, as program is not empty.");
 
-            Assert.True(counter == 30, $"Expected Insert() count for counter to be 30. This is based on observing a previous run. Got {counter}");
+            Assert.True(counter == 70, $"Expected Insert() count for counter to be 70. This is based on observing a previous run. Got {counter}");
         }
 
-        
-        
-        
-        
+
     }
 }

@@ -1,5 +1,4 @@
-﻿using Analyses;
-using Analyses.Algorithms;
+﻿using Analyses.Algorithms;
 using Analyses.Analysis;
 using Analyses.Graph;
 using System;
@@ -7,11 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Linq;
-using Analyses.Analysis.BitVector;
 using Analyses.Analysis.Distributive;
 using Analyses.Analysis.Monotone.DetectionOfSignsAnalysis;
 using Analyses.Analysis.BitVector.LiveVariablesAnalysis;
 using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
+using Analyses.Analysis.BitVector.AvailableExpressionAnalysis;
 
 namespace Benchmark
 {
@@ -103,6 +102,8 @@ namespace Benchmark
 					return new LiveVariables(programGraph, worklistImplementation);
 				case AnalysisImplementation.ReachingDefinitions:
 					return new ReachingDefinitions(programGraph, worklistImplementation);
+				case AnalysisImplementation.AvailableExpressions:
+					return new AvailableExpressions(programGraph, worklistImplementation);
 				default:
 					throw new ArgumentException("The specified analysis is not yet listed in this method.", "analysisImpl");
 			}
