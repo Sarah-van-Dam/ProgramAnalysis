@@ -7,6 +7,7 @@ using Analyses.Analysis;
 using Analyses.Analysis.BitVector.LiveVariablesAnalysis;
 using Analyses.Analysis.Distributive;
 using Analyses.Analysis.Monotone.DetectionOfSignsAnalysis;
+using Analyses.Analysis.BitVector.AvailableExpressionAnalysis;
 
 namespace Analyses
 {
@@ -123,6 +124,8 @@ namespace Analyses
                 AnalysisImplementation.LiveVariables => new LiveVariables(pg, chosenAlgorithm),
                 AnalysisImplementation.FaintVariables => new FaintVariables(pg, chosenAlgorithm),
                 AnalysisImplementation.DetectionOfSigns => new DetectionOfSigns(pg, chosenAlgorithm),
+                AnalysisImplementation.DangerousVariables => new DangerousVariables(pg, chosenAlgorithm),
+                AnalysisImplementation.AvailableExpressions => new AvailableExpressions(pg, chosenAlgorithm),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -150,6 +153,8 @@ namespace Analyses
             Console.WriteLine("2. Live Variables");
             Console.WriteLine("3. Faint Variables");
             Console.WriteLine("4. Detection of Signs");
+            Console.WriteLine("5. Dangerous Variables");
+            Console.WriteLine("6. Available Expressions");
             var analysisName = Console.ReadLine();
 
             var chosenAnalysis = ChooseAnalysis(analysisName);
@@ -170,9 +175,9 @@ namespace Analyses
                 case "3":
                     chosenAlgorithm = WorklistImplementation.Fifo;
                     break;
-                case "4":
+                /*case "4":
                     chosenAlgorithm = WorklistImplementation.DepthFirstPostOrder;
-                    break;
+                    break;*/
                 default:
                     Console.WriteLine("The number didn't match one of the algorithms.");
                     throw new Exception();
@@ -197,6 +202,12 @@ namespace Analyses
                     break;
                 case "4":
                     chosenAnalysis = AnalysisImplementation.DetectionOfSigns;
+                    break;
+                case "5":
+                    chosenAnalysis = AnalysisImplementation.DangerousVariables;
+                    break;
+                case "6":
+                    chosenAnalysis = AnalysisImplementation.AvailableExpressions;
                     break;
                 default:
                     Console.WriteLine("The number didn't match one of the analyses.");
