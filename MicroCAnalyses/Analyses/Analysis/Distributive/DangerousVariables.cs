@@ -61,8 +61,8 @@ namespace Analyses.Analysis.Distributive
                     var freeVariableArrayAssignment = _freeVariablesAnalysis.FreeVariables(arrayAssignment.RightHandSide);
 
                     // Only change the sets, when the index and the assignment variables exists in free variables
-                    if (dangerousVariableConstraint.DangerousVariables.Contains(freeVariableArrayIndex.First()) &&
-                        dangerousVariableConstraint.DangerousVariables.Contains(freeVariableArrayAssignment.First()))
+                    if (dangerousVariableConstraint.DangerousVariables.Intersect(freeVariableArrayIndex).Any() &&
+                        dangerousVariableConstraint.DangerousVariables.Intersect(freeVariableArrayAssignment).Any())
                     {
                         dangerousVariableConstraint.DangerousVariables.UnionWith(new HashSet<string>{ arrayAssignment.ArrayName });
                     }
@@ -113,21 +113,21 @@ namespace Analyses.Analysis.Distributive
                     var freeVariableRecordMemberSnd = _freeVariablesAnalysis.FreeVariables(recordAssignment.SecondExpression);
 
                     //if a1 and a2 are in R -> add assignment
-                    if (dangerousVariableConstraint.DangerousVariables.Contains(freeVariableRecordMemberFst.First()) &&
-                        dangerousVariableConstraint.DangerousVariables.Contains(freeVariableRecordMemberSnd.First()))
+                    if (dangerousVariableConstraint.DangerousVariables.Intersect(freeVariableRecordMemberFst).Any() &&
+                        dangerousVariableConstraint.DangerousVariables.Intersect(freeVariableRecordMemberSnd).Any())
                     {
                         dangerousVariableConstraint.DangerousVariables.UnionWith(new HashSet<string> { recordFst, recordSnd });
                     }
                     //only a1 is in R -> remove R.snd add R.fst
-                    else if (dangerousVariableConstraint.DangerousVariables.Contains(freeVariableRecordMemberFst.First()) &&
-                        !(dangerousVariableConstraint.DangerousVariables.Contains(freeVariableRecordMemberSnd.First())))
+                    else if (dangerousVariableConstraint.DangerousVariables.Intersect(freeVariableRecordMemberFst).Any() &&
+                        !(dangerousVariableConstraint.DangerousVariables.Intersect(freeVariableRecordMemberSnd).Any()))
                     {
                         dangerousVariableConstraint.DangerousVariables.Add(recordFst);
                         dangerousVariableConstraint.DangerousVariables.Remove(recordSnd);
                     }
                     //only a2 is in R -> remove R.fst add R.snd
-                    else if (!(dangerousVariableConstraint.DangerousVariables.Contains(freeVariableRecordMemberFst.First())) &&
-                        dangerousVariableConstraint.DangerousVariables.Contains(freeVariableRecordMemberSnd.First()))
+                    else if (!(dangerousVariableConstraint.DangerousVariables.Intersect(freeVariableRecordMemberFst).Any()) &&
+                        dangerousVariableConstraint.DangerousVariables.Intersect(freeVariableRecordMemberSnd).Any())
                     {
                         dangerousVariableConstraint.DangerousVariables.Remove(recordFst);
                         dangerousVariableConstraint.DangerousVariables.Add(recordSnd);

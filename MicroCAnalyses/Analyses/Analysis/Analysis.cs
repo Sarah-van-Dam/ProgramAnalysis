@@ -31,7 +31,8 @@ namespace Analyses.Analysis
         
         // ToDo: We need to figure out the return type the analyse method.
         public abstract void Analyse();
-        
-        
+
+        public abstract void PrintResult();
+
     }
 }

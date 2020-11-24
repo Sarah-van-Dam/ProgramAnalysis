@@ -99,6 +99,14 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
             }
         }
 
+        private void CreateVariableDefault(ReachingDefinitionConstraints rdConstraints, string varName)
+        {
+            if (!rdConstraints.VariableToPossibleAssignments.ContainsKey(varName))
+            {
+                rdConstraints.VariableToPossibleAssignments[varName] = new HashSet<(string variable, string startNode, string endNode)>();
+            }
+        }
+
         public override void Generate(Edge edge, IConstraints constraints)
         {
             if (!(constraints is ReachingDefinitionConstraints rdConstraints))
@@ -113,6 +121,7 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     // A declaration cannot generate anything
                     break;
                 case ArrayDeclaration arrayDeclaration:
+                    CreateVariableDefault(rdConstraints, arrayDeclaration.ArrayName);
                     rdConstraints.VariableToPossibleAssignments[arrayDeclaration.ArrayName].Add((
                         arrayDeclaration.ArrayName, edge.FromNode.Name, edge.ToNode.Name));
                     break;
@@ -123,14 +132,17 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                     // A declaration cannot generate anything
                     break;
                 case IntAssignment intAssignment:
+                    CreateVariableDefault(rdConstraints, intAssignment.VariableName);
                     rdConstraints.VariableToPossibleAssignments[intAssignment.VariableName]
                         .Add((intAssignment.VariableName, edge.FromNode.Name, edge.ToNode.Name));
                     break;
                 case ArrayAssignment arrayAssignment:
+                    CreateVariableDefault(rdConstraints, arrayAssignment.ArrayName);
                     rdConstraints.VariableToPossibleAssignments[arrayAssignment.ArrayName]
                         .Add((arrayAssignment.ArrayName, edge.FromNode.Name, edge.ToNode.Name));
                     break;
                 case RecordMemberAssignment recordMemberAssignment:
+                    CreateVariableDefault(rdConstraints, $"{recordMemberAssignment.RecordName}.{recordMemberAssignment.RecordMember}");
                     rdConstraints
                         .VariableToPossibleAssignments[
                             $"{recordMemberAssignment.RecordName}.{recordMemberAssignment.RecordMember}"]
@@ -138,6 +150,8 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                             edge.FromNode.Name, edge.ToNode.Name));
                     break;
                 case RecordAssignment recordAssignment:
+                    CreateVariableDefault(rdConstraints, $"{recordAssignment.RecordName}.{RecordMember.Fst}");
+                    CreateVariableDefault(rdConstraints, $"{recordAssignment.RecordName}.{RecordMember.Snd}");
                     rdConstraints.VariableToPossibleAssignments[$"{recordAssignment.RecordName}.{RecordMember.Fst}"]
                         .Add(($"{recordAssignment.RecordName}.{RecordMember.Fst}", edge.FromNode.Name,
                             edge.ToNode.Name));
@@ -146,14 +160,17 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
                             edge.ToNode.Name));
                     break;
                 case ReadVariable readVariable:
+                    CreateVariableDefault(rdConstraints, readVariable.VariableName);
                     rdConstraints.VariableToPossibleAssignments[readVariable.VariableName]
                         .Add((readVariable.VariableName, edge.FromNode.Name, edge.ToNode.Name));
                     break;
                 case ReadArray readArray:
+                    CreateVariableDefault(rdConstraints, readArray.ArrayName);
                     rdConstraints.VariableToPossibleAssignments[readArray.ArrayName]
                         .Add((readArray.ArrayName, edge.FromNode.Name, edge.ToNode.Name));
                     break;
                 case ReadRecordMember recordMember:
+                    CreateVariableDefault(rdConstraints, $"{recordMember.RecordName}.{recordMember.RecordMember}");
                     rdConstraints
                         .VariableToPossibleAssignments[$"{recordMember.RecordName}.{recordMember.RecordMember}"]
                         .Add(($"{recordMember.RecordName}.{recordMember.RecordMember}", edge.FromNode.Name,

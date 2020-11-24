@@ -42,6 +42,11 @@ namespace Analyses.Analysis.Distributive
             }
             
         }
+        
+        public override void PrintResult()
+        {
+            throw new System.NotImplementedException();
+        }
 
         private bool UpdateConstraints(Edge edge, in bool isForward)
         {
