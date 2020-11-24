@@ -1,6 +1,7 @@
 using System;
 using Analyses.Algorithms;
 using Analyses.Algorithms.Queue;
+using Analyses.Algorithms.ReversePostorder;
 using Analyses.Algorithms.Stack;
 using Analyses.Graph;
 
@@ -22,6 +23,7 @@ namespace Analyses.Analysis
                 WorklistImplementation.SortedIteration => new SortedIterationWorklist(Direction),
                 WorklistImplementation.Lifo => new WorklistLIFOAlgorithm(),
                 WorklistImplementation.Fifo => new WorklistFIFOAlgorithm(),
+                WorklistImplementation.NaturalLoops => new NaturalOrderingWorklist(_program),
                 _ => throw new ArgumentOutOfRangeException(nameof(worklistImplementation), worklistImplementation, null)
             };
         }

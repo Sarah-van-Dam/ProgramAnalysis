@@ -1,11 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using Analyses.Algorithms;
 using Analyses.Algorithms.ReversePostorder;
 using Analyses.Analysis.Actions;
+using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Graph;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Analyses.Test.Algorithms.ReversePostorder
 {
@@ -28,25 +28,24 @@ namespace Analyses.Test.Algorithms.ReversePostorder
         }
         
         [Fact]
-        public void TestCreationOfNaturalOrderingWorklist()
+        public void TestUsageOfNaturalOrderingAlgorithm()
         {
-            var (programGraph, edges) = ConstructTestProgramGraph();
-            //var expectedEdges = new List<Edge>
-            //{
-            //    edges[0], edges[1], edges[2], edges[3], edges[4], edges[6], edges[5], edges[8]
-            //};
+            var (programGraph, _) = ConstructTestProgramGraph();
+
+            var analysis = new ReachingDefinitions(programGraph, WorklistImplementation.NaturalLoops);
             
-            
-            var algorithm = new NaturalOrderingWorklist(programGraph);
-            
+            analysis.Analyse();
+
+            var count = analysis._worklistAlgorithm.BasicActionsNeeded;
             //Assert.Equal(expectedEdges, spanningTree.Edges);
         }
 
+        /*
 
         [Fact]
         public void TestProgramWithNestedLoops()
         {
-            var program = "int i; int j; i := 1; j; := 0; while(i < 5){i := j+1; while(j < 10){ j:= j+1;} j := 0; } j := 11;";
+            var program = "int i; int j; i := 1; j := 0; while ( i < 5 ) { i := j +1 ; while ( j < 10 ) { j := j + 1; } j := 0; } j := 11;";
             var pg = new ProgramGraph(Parser.parse(program));
             
             var algorithm = new NaturalOrderingWorklist(pg);
@@ -55,7 +54,7 @@ namespace Analyses.Test.Algorithms.ReversePostorder
 
         }
         
-        
+        */
         private static (ProgramGraph programGraph, List<Edge> edgesUsedInPg) ConstructTestProgramGraph()
         {
             var variableNames = new HashSet<string>{"x", "y"};
