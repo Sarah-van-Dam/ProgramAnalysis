@@ -36,8 +36,7 @@ namespace Analyses.Test.Algorithms.ReversePostorder
             
             analysis.Analyse();
 
-            var count = analysis._worklistAlgorithm.BasicActionsNeeded;
-            //Assert.Equal(expectedEdges, spanningTree.Edges);
+            Assert.Equal(14, analysis._worklistAlgorithm.BasicActionsNeeded);
         }
 
         /*
@@ -73,15 +72,15 @@ namespace Analyses.Test.Algorithms.ReversePostorder
             
             var edges = new List<Edge>
             {
-                new Edge(nodes[ProgramGraph.StartNode], new IntDeclaration(), nodes["q1"]),
-                new Edge(nodes["q1"], new IntDeclaration(), nodes["q2"]),
-                new Edge(nodes["q2"],new IntAssignment(), nodes["q3"]),
-                new Edge(nodes["q3"], new IntAssignment(), nodes["q4"]),
-                new Edge(nodes["q4"],new Condition(), nodes["q5"]),
-                new Edge(nodes["q4"],new Condition(), nodes["q6"]),
-                new Edge(nodes["q5"], new IntAssignment(), nodes["q7"]),
-                new Edge(nodes["q7"], new IntAssignment(), nodes["q4"]),
-                new Edge(nodes["q6"], new IntAssignment(), nodes[ProgramGraph.EndNode])
+                new Edge(nodes[ProgramGraph.StartNode], new IntDeclaration {VariableName = "x"}, nodes["q1"]),
+                new Edge(nodes["q1"], new IntDeclaration{VariableName = "y"}, nodes["q2"]),
+                new Edge(nodes["q2"],new IntAssignment{VariableName = "x", RightHandSide = MicroCTypes.arithmeticExpression.NewNumber(1)}, nodes["q3"]),
+                new Edge(nodes["q3"], new IntAssignment {VariableName = "y", RightHandSide = MicroCTypes.arithmeticExpression.NewNumber(2)}, nodes["q4"]),
+                new Edge(nodes["q4"],new Condition{Cond = MicroCTypes.booleanExpression.NewGreat(MicroCTypes.arithmeticExpression.NewVariable("y"),MicroCTypes.arithmeticExpression.NewVariable("x"))}, nodes["q5"]),
+                new Edge(nodes["q4"],new Condition{Cond = MicroCTypes.booleanExpression.NewNot(MicroCTypes.booleanExpression.NewGreat(MicroCTypes.arithmeticExpression.NewVariable("y"),MicroCTypes.arithmeticExpression.NewVariable("x")))}, nodes["q6"]),
+                new Edge(nodes["q5"], new IntAssignment{VariableName = "x", RightHandSide = MicroCTypes.arithmeticExpression.NewPlus(MicroCTypes.arithmeticExpression.NewVariable("x"),MicroCTypes.arithmeticExpression.NewNumber(1))}, nodes["q7"]),
+                new Edge(nodes["q7"], new IntAssignment{VariableName = "y", RightHandSide = MicroCTypes.arithmeticExpression.NewNumber(0)}, nodes["q4"]),
+                new Edge(nodes["q6"], new IntAssignment{VariableName = "x", RightHandSide = MicroCTypes.arithmeticExpression.NewNumber(0)}, nodes[ProgramGraph.EndNode])
             };
 
             nodes[ProgramGraph.StartNode].OutGoingEdges.Add(edges[0]);

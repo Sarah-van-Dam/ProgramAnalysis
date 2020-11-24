@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Analyses.Algorithms;
 using Analyses.Analysis.BitVector.AvailableExpressionAnalysis;
 using Analyses.Analysis.BitVector.LiveVariablesAnalysis;
 using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;

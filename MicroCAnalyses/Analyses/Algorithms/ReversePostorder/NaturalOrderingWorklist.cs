@@ -49,20 +49,27 @@ namespace Analyses.Algorithms.ReversePostorder
         private Dictionary<Node, HashSet<Node>> NaturalLoop()
         {
             var loops = new Dictionary<Node, HashSet<Node>>();
-            foreach (var node in _programGraph.Nodes)
+            foreach (var node in _nodesToReconsider)
             {
                 loops[node] = new HashSet<Node>();
             }
 
-            foreach (var edge in _programGraph.Edges
+            foreach (var edge in _nodesToReconsider.SelectMany(n => n.OutGoingEdges)
                 .Where(e => _reversePostOrder[e.ToNode] <= _reversePostOrder[e.FromNode]))
             {
+                var containsEntry = loops.TryGetValue(edge.ToNode, out _);
+                if (!containsEntry)
+                {
+                    //Happens when iterating through members of the final loops
+                    continue;
+                }
                 loops[edge.ToNode].Add(edge.ToNode);
                 Build(edge.FromNode, edge.ToNode, loops);
             }
 
             return loops;
         }
+
 
         private void Build(Node from, Node to, IReadOnlyDictionary<Node, HashSet<Node>> loops)
         {
@@ -92,6 +99,8 @@ namespace Analyses.Algorithms.ReversePostorder
 
         public override Node Extract()
         {
+            BasicActionsNeeded++;
+
             if (!_nodesNeedingVisit.Any())
             {
                 var naturalLoops = NaturalLoop();
@@ -99,6 +108,12 @@ namespace Analyses.Algorithms.ReversePostorder
                     naturalLoops.Where(s => !s.Value.Intersect(_nodesToReconsider).Any())
                         .Select(kvp => kvp.Key).ToList();
                 var remainingNodes = _nodesToReconsider.Except(nodesWithNoPInLoopAncestors).ToList(); // P' in literature
+
+                if (!nodesWithNoPInLoopAncestors.Any() && remainingNodes.Count == 1)
+                {
+                    _nodesToReconsider.Clear();
+                    return remainingNodes.First();
+                }
 
                 var nodesInReversePostOrder = ReversePostOrder(nodesWithNoPInLoopAncestors);
                 var nodeToReturn = nodesInReversePostOrder.First();
@@ -117,6 +132,7 @@ namespace Analyses.Algorithms.ReversePostorder
             }
         }
 
+     
         private List<Node> ReversePostOrder(List<Node> nodes)
         {
             var depthFirstSpanningTree = new HashSet<Edge>();
@@ -125,38 +141,38 @@ namespace Analyses.Algorithms.ReversePostorder
             var currentNumber = nodes.Count;
             var up = new Dictionary<Node, int>();
             var ip = new Dictionary<Node, (int rp, int up)>();
-            DFS(visited, up, ip, ref currentNumber, nodes.Single(n => n.Name == ProgramGraph.StartNode), depthFirstSpanningTree, reversePostOrdering);
+            DFS(visited, up, ip, ref currentNumber, nodes.First(), depthFirstSpanningTree, reversePostOrdering);
 
-            var sortedArray = new List<Node>();
+            var sortedList = new List<Node>();
             foreach (var kvp in reversePostOrdering.Where(rpo => nodes.Contains(rpo.Key)))
             {
                 var index = 0;
-                var current = sortedArray.FirstOrDefault();
+                var current = sortedList.FirstOrDefault();
                 if (current == null)
                 {
-                    sortedArray.Add(kvp.Key);
+                    sortedList.Add(kvp.Key);
                 }
                 else
                 {
-                    while (reversePostOrdering[current] > kvp.Value && index < sortedArray.Count-1)
+                    while (reversePostOrdering[current] > kvp.Value && index < sortedList.Count-1)
                     {
                         index++;
-                        current = sortedArray[index];
+                        current = sortedList[index];
                     }
 
-                    if (index == sortedArray.Count - 1)
+                    if (index == sortedList.Count - 1)
                     {
-                        sortedArray.Add(kvp.Key);
+                        sortedList.Add(kvp.Key);
                     }
                     else
                     {
-                        sortedArray.Insert(index,kvp.Key);
+                        sortedList.Insert(index,kvp.Key);
                     }
                 }
                 
             }
 
-            return sortedArray.ToList();
+            return sortedList;
         }
     }
 }
