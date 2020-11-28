@@ -64,7 +64,7 @@ namespace Analyses.Algorithms.ReversePostorder
 
             var rpoComparison = isForward
                 ? new System.Func<Edge, bool>(e => _reversePostOrder[e.ToNode] >= _reversePostOrder[e.FromNode])
-                : (e => _reversePostOrder[e.FromNode] <= _reversePostOrder[e.ToNode]); 
+                : (e => _reversePostOrder[e.FromNode] >= _reversePostOrder[e.ToNode]); 
 
             foreach (var edge in _nodesToReconsider.SelectMany(n => isForward ? n.OutGoingEdges : n.InGoingEdges)
                 .Where(rpoComparison))
