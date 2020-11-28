@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Analyses.Graph;
 
 namespace Analyses.Algorithms.ReversePostorder
@@ -63,6 +62,7 @@ namespace Analyses.Algorithms.ReversePostorder
                     //Happens when iterating through members of the final loops
                     continue;
                 }
+                
                 loops[edge.ToNode].Add(edge.ToNode);
                 Build(edge.FromNode, edge.ToNode, loops);
             }
@@ -109,17 +109,7 @@ namespace Analyses.Algorithms.ReversePostorder
                     naturalLoops.Where(s => !nodesInLoop.Contains(s.Key))
                         .Select(kvp => kvp.Key).ToList();
                 var remainingNodes = _nodesToReconsider.Except(nodesWithNoPInLoopAncestors).ToList(); // P' in literature
-
-                if (!nodesWithNoPInLoopAncestors.Any())
-                {
-                    var remainingNodesInReversePostOrder = ReversePostOrder(remainingNodes);
-                    var remainingNodeToReturn = remainingNodesInReversePostOrder.First();
-                    remainingNodesInReversePostOrder.RemoveAt(0);
-                    _nodesToReconsider.Clear();
-                    _nodesNeedingVisit.AddRange(remainingNodesInReversePostOrder);
-                    return remainingNodeToReturn;
-                }
-
+                
                 var nodesInReversePostOrder = ReversePostOrder(nodesWithNoPInLoopAncestors);
                 var nodeToReturn = nodesInReversePostOrder.First();
                 nodesInReversePostOrder.RemoveAt(0);
