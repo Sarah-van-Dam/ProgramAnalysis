@@ -10,13 +10,15 @@ namespace Analyses.Algorithms.ReversePostorder
         private readonly Dictionary<Node, int> _reversePostOrder;
         private readonly List<Node> _nodesNeedingVisit; //V in literature
         private readonly List<Node> _nodesToReconsider; //P IN literature
+        private readonly Direction _direction;
 
-        public NaturalOrderingWorklist(ProgramGraph pg)
+        public NaturalOrderingWorklist(ProgramGraph pg, Direction direction)
         {
             _programGraph = pg;
-            _reversePostOrder = ReversePostOrderWithATwist();
             _nodesNeedingVisit = new List<Node>();
             _nodesToReconsider = new List<Node>();
+            _direction = direction;
+            _reversePostOrder = ReversePostOrderWithATwist();
         }
 
         private Dictionary<Node, int> ReversePostOrderWithATwist()
@@ -27,18 +29,23 @@ namespace Analyses.Algorithms.ReversePostorder
             var currentNumber = _programGraph.Nodes.Count;
             var up = new Dictionary<Node, int>();
             var ip = new Dictionary<Node, (int rp, int up)>();
-            DFS(visited,up,ip, ref currentNumber, _programGraph.Nodes.Single(n => n.Name == ProgramGraph.StartNode), depthFirstSpanningTree, reversePostOrdering);
+            DFS(visited,up,ip, ref currentNumber, _programGraph.Nodes.Single(n => n.Name == (_direction == Direction.Forward ? ProgramGraph.StartNode : ProgramGraph.EndNode)), depthFirstSpanningTree, reversePostOrdering);
             return reversePostOrdering;
         }
 
-        private static void DFS(HashSet<Node> visited, Dictionary<Node,int> up, Dictionary<Node,(int rp, int up)> ip, ref int currentNumber, Node currentNode, HashSet<Edge> depthFirstSpanningTree, Dictionary<Node, int> reversePostOrdering)
+        private void DFS(HashSet<Node> visited, Dictionary<Node,int> up, Dictionary<Node,(int rp, int up)> ip, ref int currentNumber, Node currentNode, HashSet<Edge> depthFirstSpanningTree, Dictionary<Node, int> reversePostOrdering)
         {
             visited.Add(currentNode);
             up[currentNode] = currentNumber;
-            foreach (var edge in currentNode.OutGoingEdges.Where(e => !visited.Contains(e.ToNode)))
+
+            var isForward = _direction == Direction.Forward;
+
+            var edgesToIterate = isForward ? currentNode.OutGoingEdges : currentNode.InGoingEdges;
+
+            foreach (var edge in edgesToIterate.Where(e => !visited.Contains(isForward ? e.ToNode : e.FromNode)))
             {
                 depthFirstSpanningTree.Add(edge);
-                DFS(visited,up,ip,ref currentNumber,edge.ToNode,depthFirstSpanningTree,reversePostOrdering);
+                DFS(visited,up,ip,ref currentNumber, isForward ? edge.ToNode : edge.FromNode,depthFirstSpanningTree,reversePostOrdering);
             }
             reversePostOrdering[currentNode] = currentNumber;
             currentNumber--;
@@ -53,18 +60,26 @@ namespace Analyses.Algorithms.ReversePostorder
                 loops[node] = new HashSet<Node>();
             }
             //TODO: For duality add direction and depending of that choose either outgoing or ingoing 
-            foreach (var edge in _nodesToReconsider.SelectMany(n => n.OutGoingEdges)
-                .Where(e => _reversePostOrder[e.ToNode] >= _reversePostOrder[e.FromNode]))
+            var isForward = _direction == Direction.Forward;
+
+            var rpoComparison = isForward
+                ? new System.Func<Edge, bool>(e => _reversePostOrder[e.ToNode] >= _reversePostOrder[e.FromNode])
+                : (e => _reversePostOrder[e.FromNode] <= _reversePostOrder[e.ToNode]); 
+
+            foreach (var edge in _nodesToReconsider.SelectMany(n => isForward ? n.OutGoingEdges : n.InGoingEdges)
+                .Where(rpoComparison))
             {
-                var containsEntry = loops.TryGetValue(edge.ToNode, out _);
+                var nodeToExtend = isForward ? edge.ToNode : edge.FromNode;
+
+                var containsEntry = loops.TryGetValue(nodeToExtend, out _);
                 if (!containsEntry)
                 {
                     //Happens when iterating through members of the final loops
                     continue;
                 }
                 
-                loops[edge.ToNode].Add(edge.ToNode);
-                Build(edge.FromNode, edge.ToNode, loops);
+                loops[nodeToExtend].Add(nodeToExtend);
+                Build(isForward ? edge.FromNode : edge.ToNode, nodeToExtend, loops);
             }
 
             return loops;
@@ -73,16 +88,19 @@ namespace Analyses.Algorithms.ReversePostorder
 
         private void Build(Node from, Node to, IReadOnlyDictionary<Node, HashSet<Node>> loops)
         {
+            var isForward = _direction == Direction.Forward;
+            
             if (_reversePostOrder[to] <= _reversePostOrder[from]
                 && !loops[to].Contains(from))
             {
                 loops[to].Add(from);
-                foreach (var ingoingEdge in from.InGoingEdges)
+                foreach (var ingoingEdge in isForward ? from.InGoingEdges : from.OutGoingEdges)
                 {
-                    Build(ingoingEdge.FromNode, to, loops);
+                    Build(isForward ? ingoingEdge.FromNode : ingoingEdge.ToNode, to, loops);
                 }
             }
         }
+
 
         public override bool Empty()
         {
@@ -136,7 +154,7 @@ namespace Analyses.Algorithms.ReversePostorder
             var currentNumber = nodes.Count;
             var up = new Dictionary<Node, int>();
             var ip = new Dictionary<Node, (int rp, int up)>();
-            DFS(visited, up, ip, ref currentNumber, nodes.First(), depthFirstSpanningTree, reversePostOrdering);
+            DFS(visited, up, ip, ref currentNumber, _direction == Direction.Forward ? nodes.First() : nodes.Last(), depthFirstSpanningTree, reversePostOrdering);
 
             var sortedList = new List<Node>();
             foreach (var kvp in reversePostOrdering.Where(rpo => nodes.Contains(rpo.Key)))
@@ -149,13 +167,13 @@ namespace Analyses.Algorithms.ReversePostorder
                 }
                 else
                 {
-                    while (reversePostOrdering[current] > kvp.Value && index < sortedList.Count-1)
+                    while (reversePostOrdering[current] < kvp.Value && index < sortedList.Count-1)
                     {
                         index++;
                         current = sortedList[index];
                     }
 
-                    if (index == sortedList.Count - 1)
+                    if (index == sortedList.Count - 2)
                     {
                         sortedList.Add(kvp.Key);
                     }

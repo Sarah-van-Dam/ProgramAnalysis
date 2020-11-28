@@ -23,7 +23,7 @@ namespace Analyses.Analysis
                 WorklistImplementation.SortedIteration => new SortedIterationWorklist(Direction),
                 WorklistImplementation.Lifo => new WorklistLIFOAlgorithm(),
                 WorklistImplementation.Fifo => new WorklistFIFOAlgorithm(),
-                WorklistImplementation.NaturalLoops => new NaturalOrderingWorklist(_program),
+                WorklistImplementation.NaturalLoops => new NaturalOrderingWorklist(_program, Direction),
                 _ => throw new ArgumentOutOfRangeException(nameof(worklistImplementation), worklistImplementation, null)
             };
         }
