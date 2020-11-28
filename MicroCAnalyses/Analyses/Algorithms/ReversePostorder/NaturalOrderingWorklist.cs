@@ -53,9 +53,9 @@ namespace Analyses.Algorithms.ReversePostorder
             {
                 loops[node] = new HashSet<Node>();
             }
-
+            //TODO: For duality add direction and depending of that choose either outgoing or ingoing 
             foreach (var edge in _nodesToReconsider.SelectMany(n => n.OutGoingEdges)
-                .Where(e => _reversePostOrder[e.ToNode] <= _reversePostOrder[e.FromNode]))
+                .Where(e => _reversePostOrder[e.ToNode] >= _reversePostOrder[e.FromNode]))
             {
                 var containsEntry = loops.TryGetValue(edge.ToNode, out _);
                 if (!containsEntry)
@@ -104,15 +104,20 @@ namespace Analyses.Algorithms.ReversePostorder
             if (!_nodesNeedingVisit.Any())
             {
                 var naturalLoops = NaturalLoop();
+                var nodesInLoop = naturalLoops.Where(n => n.Value.Any()).SelectMany(n => n.Value).ToHashSet();
                 var nodesWithNoPInLoopAncestors = //S in literature
-                    naturalLoops.Where(s => !s.Value.Intersect(_nodesToReconsider).Any())
+                    naturalLoops.Where(s => !nodesInLoop.Contains(s.Key))
                         .Select(kvp => kvp.Key).ToList();
                 var remainingNodes = _nodesToReconsider.Except(nodesWithNoPInLoopAncestors).ToList(); // P' in literature
 
-                if (!nodesWithNoPInLoopAncestors.Any() && remainingNodes.Count == 1)
+                if (!nodesWithNoPInLoopAncestors.Any())
                 {
+                    var remainingNodesInReversePostOrder = ReversePostOrder(remainingNodes);
+                    var remainingNodeToReturn = remainingNodesInReversePostOrder.First();
+                    remainingNodesInReversePostOrder.RemoveAt(0);
                     _nodesToReconsider.Clear();
-                    return remainingNodes.First();
+                    _nodesNeedingVisit.AddRange(remainingNodesInReversePostOrder);
+                    return remainingNodeToReturn;
                 }
 
                 var nodesInReversePostOrder = ReversePostOrder(nodesWithNoPInLoopAncestors);
