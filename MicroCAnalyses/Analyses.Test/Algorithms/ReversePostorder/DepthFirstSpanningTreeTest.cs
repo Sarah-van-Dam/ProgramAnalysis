@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Analyses.Algorithms;
-using Analyses.Algorithms.ReversePostorder;
 using Analyses.Analysis.Actions;
 using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Graph;
@@ -11,22 +10,6 @@ namespace Analyses.Test.Algorithms.ReversePostorder
 {
     public class DepthFirstSpanningTreeTest 
     {
-
-        [Fact]
-        public void TestCreationOfDepthFirstSpanningTree()
-        {
-            var (programGraph, edges) = ConstructTestProgramGraph();
-            var expectedEdges = new List<Edge>
-            {
-                edges[0], edges[1], edges[2], edges[3], edges[4], edges[6], edges[5], edges[8]
-            };
-            
-            
-            var spanningTree = DepthFirstSpanningTree.CreateDepthFirstSpanningTreeFromProgramGraph(programGraph);
-            
-            Assert.Equal(expectedEdges, spanningTree.Edges);
-        }
-        
         [Fact]
         public void TestUsageOfNaturalOrderingAlgorithm()
         {
