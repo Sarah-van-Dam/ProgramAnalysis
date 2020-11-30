@@ -167,15 +167,11 @@ namespace Analyses.Algorithms.ReversePostorder
             {
                 var naturalLoops = NaturalLoop();
 
-                var noAncestorsInP = naturalLoops.Where(n => !HasAncestorInP(n.Key))
-                    .Select(kvp => kvp.Key).ToList(); //S in literature
-
-                
                 var noGraphLoopAncestorsInP = naturalLoops.Where(n =>
                 {
                     var loopGraphsWithNoP = _loopGraph.Where(l => !l.Ancestors.Any() || l.Ancestors.All(AncestorNotInP));
                     return loopGraphsWithNoP.Any(l => l.Component.Contains(n.Key));
-                }).Select(n => n.Key).ToList();
+                }).Select(n => n.Key).ToList(); //S in literature
 
                 var remainingNodes = _nodesToReconsider.Except(noGraphLoopAncestorsInP).ToList(); // P' in literature
 
@@ -200,32 +196,7 @@ namespace Analyses.Algorithms.ReversePostorder
         {
             return !_nodesToReconsider.Intersect(naturalComponent.Component).Any() && (!naturalComponent.Ancestors.Any() || naturalComponent.Ancestors.All(AncestorNotInP));
         }
-
-        private bool HasAncestorInP(Node node)
-        {
-            if (_direction == Direction.Forward)
-            {
-                var edgeInDepthFirstSpanningTree =
-                    _depthFirstSpanningTree.SingleOrDefault(e =>
-                        e.ToNode.Equals(node)); // Will be null if node == start node
-                if (edgeInDepthFirstSpanningTree == null) return false;
-
-                return _nodesToReconsider.Contains(edgeInDepthFirstSpanningTree.FromNode) ||
-                       HasAncestorInP(edgeInDepthFirstSpanningTree.FromNode);
-            }
-            else
-            {
-                var edgeInDepthFirstSpanningTree =
-                    _depthFirstSpanningTree.SingleOrDefault(e =>
-                        e.FromNode.Equals(node)); // Will be null if node == end node
-                if (edgeInDepthFirstSpanningTree == null) return false;
-
-                return _nodesToReconsider.Contains(edgeInDepthFirstSpanningTree.ToNode) ||
-                       HasAncestorInP(edgeInDepthFirstSpanningTree.ToNode);
-            }
-        }
-
-
+        
         private List<Node> ReversePostOrder(List<Node> nodes)
         {
             var depthFirstSpanningTree = new HashSet<Edge>();
