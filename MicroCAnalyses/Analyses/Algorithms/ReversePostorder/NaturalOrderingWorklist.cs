@@ -156,13 +156,15 @@ namespace Analyses.Algorithms.ReversePostorder
 
         public override void Insert(Node q)
         {
-            if (!_nodesNeedingVisit.Contains(q)) _nodesToReconsider.Add(q);
+            if (!_nodesNeedingVisit.Contains(q))
+            {
+                BasicActionsNeeded++;
+                _nodesToReconsider.Add(q);
+            }
         }
 
         public override Node Extract()
         {
-            BasicActionsNeeded++;
-
             if (!_nodesNeedingVisit.Any())
             {
                 var naturalLoops = NaturalLoop();

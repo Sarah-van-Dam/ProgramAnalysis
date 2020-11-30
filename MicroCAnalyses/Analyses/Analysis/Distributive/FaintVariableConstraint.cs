@@ -11,7 +11,6 @@ namespace Analyses.Analysis.Distributive
 
         public FaintVariableConstraint()
         {
-            new HashSet<string>();
             StronglyLivedVariables = new HashSet<string>();
         }
         
@@ -21,14 +20,9 @@ namespace Analyses.Analysis.Distributive
             {
                 return false;
             }
-            
-            
-            //var faintVariablesIsSubset = FaintVariables.All(l => otherFaintVariableConstraint.FaintVariables.Contains(l));
             var stronglyLivedVariablesIsSubset = StronglyLivedVariables.All(l => otherFaintVariableConstraint.StronglyLivedVariables.Contains(l));
-            //var noOverlap = !FaintVariables.Intersect(otherFaintVariableConstraint.StronglyLivedVariables)
-            //    .Union((StronglyLivedVariables.Intersect(otherFaintVariableConstraint.FaintVariables))).Any();
-
-            return  stronglyLivedVariablesIsSubset; // & faintVariablesIsSubset & noOverlap;
+            
+            return  stronglyLivedVariablesIsSubset;
         }
 
         
@@ -73,5 +67,11 @@ namespace Analyses.Analysis.Distributive
             return StronglyLivedVariables.GetHashCode(); //Only used in a non readonly fashion in tests
         }
 
+        public override string ToString()
+        {
+            var stronglyLivedVariablesAsString = string.Join(", ", StronglyLivedVariables);
+
+            return $"{{ {stronglyLivedVariablesAsString} }}";
+        }
     }
 }

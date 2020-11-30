@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -54,7 +55,11 @@ namespace Analyses.Analysis.BitVector
 
         public override void PrintResult()
         {
-            throw new System.NotImplementedException();
+            Console.WriteLine($"Analysis completed in {_worklistAlgorithm.BasicActionsNeeded} steps");
+            foreach (var (node, constraints) in FinalConstraintsForNodes)
+            {
+                Console.WriteLine($"{node}: {constraints}");
+            }
         }
 
         private KeyValuePair<Node, IConstraints> GetConstraintsOfNode(string toNodeName)
