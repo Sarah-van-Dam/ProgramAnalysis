@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Analyses.Algorithms;
+using Analyses.Algorithms.ReversePostorder;
 using Analyses.Analysis.Actions;
 using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;
 using Analyses.Graph;
@@ -22,21 +23,30 @@ namespace Analyses.Test.Algorithms.ReversePostorder
             Assert.Equal(14, analysis._worklistAlgorithm.BasicActionsNeeded);
         }
 
-        /*
-
+        
         [Fact]
         public void TestProgramWithNestedLoops()
         {
-            var program = "int i; int j; i := 1; j := 0; while ( i < 5 ) { i := j +1 ; while ( j < 10 ) { j := j + 1; } j := 0; } j := 11;";
+            const string program = "int i; int j; i := 1 ; j := 0 ; while ( i < 5 ) { i := j + 1 ; while ( j < 10 ) { j := j + 1 ; } j := 0 ; } j := 11 ;";
             var pg = new ProgramGraph(Parser.parse(program));
             
-            var algorithm = new NaturalOrderingWorklist(pg);
+            var algorithm = new NaturalOrderingWorklist(pg, Direction.Forward);
+
+            foreach (var node in pg.Nodes)
+            {
+                algorithm.Insert(node);
+            }
+
+            while (!algorithm.Empty())
+            {
+                algorithm.Extract();
+            }
 
             var stop = "stop";
 
         }
         
-        */
+        
         private static (ProgramGraph programGraph, List<Edge> edgesUsedInPg) ConstructTestProgramGraph()
         {
             var variableNames = new HashSet<string>{"x", "y"};

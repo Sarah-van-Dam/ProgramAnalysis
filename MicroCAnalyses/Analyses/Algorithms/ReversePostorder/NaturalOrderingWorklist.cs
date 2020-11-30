@@ -131,6 +131,13 @@ namespace Analyses.Algorithms.ReversePostorder
                 var noAncestorsInP = naturalLoops.Where(n => !HasAncestorInP(n.Key))
                     .Select(kvp => kvp.Key).ToList(); //S in literature
 
+                var loopGraph = GenerateGraphOfLoops(naturalLoops);
+                var noGraphLoopAncestorsInP = naturalLoops.Where(n =>
+                {
+                    var loopGraphsWithNoP = loopGraph.Where(l => !l.Ancestors.Any() || l.Ancestors.All(AncestorNotInP));
+                    return loopGraphsWithNoP.Any(l => l.Component.Contains(n.Key));
+                }).Select(n => n.Key).ToList();
+
                 var remainingNodes = _nodesToReconsider.Except(noAncestorsInP).ToList(); // P' in literature
 
                 var nodesInReversePostOrder = ReversePostOrder(noAncestorsInP);
@@ -148,6 +155,11 @@ namespace Analyses.Algorithms.ReversePostorder
                 _nodesNeedingVisit.RemoveAt(0);
                 return nodeToReturn;
             }
+        }
+
+        private bool AncestorNotInP(NaturalComponent naturalComponent)
+        {
+            return !_nodesToReconsider.Intersect(naturalComponent.Component).Any() && (!naturalComponent.Ancestors.Any() || naturalComponent.Ancestors.All(AncestorNotInP));
         }
 
         private bool HasAncestorInP(Node node)
@@ -212,5 +224,78 @@ namespace Analyses.Algorithms.ReversePostorder
 
             return sortedList;
         }
+
+        private ISet<NaturalComponent> GenerateGraphOfLoops(Dictionary<Node, HashSet<Node>> naturalLoops)
+        {
+            var naturalComponents = new HashSet<NaturalComponent>();
+            foreach (var node in _nodesToReconsider)
+            {
+                var naturalComponentForNode = new NaturalComponent(node, naturalLoops, _reversePostOrder);
+                if (!naturalComponents.Any(n => n.Equals(naturalComponentForNode)))
+                {
+                    naturalComponents.Add(naturalComponentForNode);
+                }
+            }
+
+            return naturalComponents;
+        }
+
+        private class NaturalComponent
+        {
+            public HashSet<Node> Component { get; }
+            public HashSet<NaturalComponent> Ancestors { get; }
+
+            public NaturalComponent(Node node, Dictionary<Node, HashSet<Node>> naturalLoops, Dictionary<Node, int> reversePostOrder)
+            {
+                Component = new HashSet<Node>();
+                Ancestors = new HashSet<NaturalComponent>();
+                var naturalLoopsContainingNode = naturalLoops.Where(n => n.Value.Contains(node)).Select(kvp => kvp.Value).ToList();
+                if (naturalLoopsContainingNode.Any())
+                {
+                    //Component is the smallest of those
+                    var smallestCount = naturalLoopsContainingNode.Select(n => n.Count).Min();
+                    var smallestComponent = naturalLoopsContainingNode.Single(n => n.Count == smallestCount);
+                    Component.UnionWith(smallestComponent);
+
+                    //Find ancestors
+                    foreach (var edge in node.InGoingEdges.Where(edge => reversePostOrder[edge.FromNode] < reversePostOrder[node]))
+                    {
+                        if (!naturalLoops.Any(n => n.Value.Contains(edge.FromNode)))
+                        {
+                            Ancestors.Add(new NaturalComponent(edge.FromNode, naturalLoops, reversePostOrder));
+                        }
+
+                    }
+
+                    var naturalLoopsWhichAreSubsetsOfComponent = naturalLoops.Where(n => n.Value.Any() && n.Value.IsSubsetOf(Component) && !n.Value.SetEquals(Component)).Select(kvp => kvp.Key);
+                    foreach (var q in naturalLoopsWhichAreSubsetsOfComponent)
+                    {
+                        Ancestors.Add(new NaturalComponent(q, naturalLoops, reversePostOrder));
+                    }
+
+                }
+                else
+                {
+                    //otherwise singleton set
+                    Component.Add(node);
+                    foreach (var edge in node.InGoingEdges.Where(edge => reversePostOrder[edge.FromNode] < reversePostOrder[node]))
+                    {
+                        Ancestors.Add(new NaturalComponent(edge.FromNode, naturalLoops, reversePostOrder));
+                    }
+                }
+
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is NaturalComponent naturalComponent && naturalComponent.Component.SetEquals(Component);
+            }
+
+            public override int GetHashCode()
+            {
+                return Component.GetHashCode();
+            }
+        }
     }
+
 }
