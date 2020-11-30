@@ -158,13 +158,14 @@ namespace Analyses.Algorithms.ReversePostorder
         {
             if (!_nodesNeedingVisit.Contains(q))
             {
-                BasicActionsNeeded++;
                 _nodesToReconsider.Add(q);
             }
         }
 
         public override Node Extract()
         {
+            BasicActionsNeeded++;
+
             if (!_nodesNeedingVisit.Any())
             {
                 var naturalLoops = NaturalLoop();
