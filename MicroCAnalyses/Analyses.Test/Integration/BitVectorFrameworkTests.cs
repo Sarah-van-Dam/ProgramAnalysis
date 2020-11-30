@@ -543,7 +543,7 @@ namespace Analyses.Test.Integration
 
             var ast = Parser.parse(Fibonacci);
             var pg = new ProgramGraph(ast);
-            var availableExpressions = new AvailableExpressions(pg);
+            var availableExpressions = new AvailableExpressions(pg, WorklistImplementation.NaturalLoops);
 
             //Act
             availableExpressions.Analyse();

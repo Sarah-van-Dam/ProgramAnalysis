@@ -131,9 +131,15 @@ namespace Analyses.Algorithms.ReversePostorder
                 var noAncestorsInP = naturalLoops.Where(n => !HasAncestorInP(n.Key))
                     .Select(kvp => kvp.Key).ToList(); //S in literature
 
-                var remainingNodes = _nodesToReconsider.Except(noAncestorsInP).ToList(); // P' in literature
+                var noAncestorsInNaturalLoops = naturalLoops
+                    .Where(n => 
+                        //!naturalLoops.Any(nl => nl.Value.Contains(n.Key)) && 
+                        !HasAncestorInNaturalLoop(n.Key, naturalLoops))
+                    .Select(kvp => kvp.Key).ToList();
 
-                var nodesInReversePostOrder = ReversePostOrder(noAncestorsInP);
+                var remainingNodes = _nodesToReconsider.Except(noAncestorsInNaturalLoops).ToList(); // P' in literature
+
+                var nodesInReversePostOrder = ReversePostOrder(noAncestorsInNaturalLoops);
                 var nodeToReturn = nodesInReversePostOrder.First();
                 nodesInReversePostOrder.RemoveAt(0);
 
@@ -147,6 +153,30 @@ namespace Analyses.Algorithms.ReversePostorder
                 var nodeToReturn = _nodesNeedingVisit.First();
                 _nodesNeedingVisit.RemoveAt(0);
                 return nodeToReturn;
+            }
+        }
+
+        private bool HasAncestorInNaturalLoop(Node node, IReadOnlyDictionary<Node,HashSet<Node>> naturalLoops)
+        {
+            if (_direction == Direction.Forward)
+            {
+                var edgeInDepthFirstSpanningTree =
+                    _depthFirstSpanningTree.SingleOrDefault(e =>
+                        e.ToNode.Equals(node)); // Will be null if node == start node
+                if (edgeInDepthFirstSpanningTree == null) return false;
+
+                return naturalLoops.Any(n => n.Value.Contains(edgeInDepthFirstSpanningTree.FromNode)) ||
+                       HasAncestorInNaturalLoop(edgeInDepthFirstSpanningTree.FromNode, naturalLoops);
+            }
+            else
+            {
+                var edgeInDepthFirstSpanningTree =
+                    _depthFirstSpanningTree.SingleOrDefault(e =>
+                        e.FromNode.Equals(node)); // Will be null if node == end node
+                if (edgeInDepthFirstSpanningTree == null) return false;
+
+                return naturalLoops.Any( n => n.Value.Contains(edgeInDepthFirstSpanningTree.ToNode)) ||
+                       HasAncestorInNaturalLoop(edgeInDepthFirstSpanningTree.ToNode, naturalLoops);
             }
         }
 
