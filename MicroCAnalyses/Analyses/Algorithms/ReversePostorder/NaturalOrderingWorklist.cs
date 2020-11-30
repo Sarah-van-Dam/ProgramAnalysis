@@ -12,6 +12,7 @@ namespace Analyses.Algorithms.ReversePostorder
         private readonly HashSet<Node> _nodesToReconsider; //P IN literature
         private readonly ProgramGraph _programGraph;
         private readonly Dictionary<Node, int> _reversePostOrder;
+        private readonly ISet<NaturalComponent> _loopGraph;
 
         public NaturalOrderingWorklist(ProgramGraph pg, Direction direction)
         {
@@ -20,6 +21,44 @@ namespace Analyses.Algorithms.ReversePostorder
             _nodesToReconsider = new HashSet<Node>();
             _direction = direction;
             (_depthFirstSpanningTree, _reversePostOrder) = ReversePostOrderWithATwist();
+            var naturalLoops = InitialNaturalLoop();
+            _loopGraph = GenerateGraphOfLoops(naturalLoops);
+        }
+
+        private Dictionary<Node, HashSet<Node>> InitialNaturalLoop()
+        {
+            var loops = new Dictionary<Node, HashSet<Node>>();
+            foreach (var node in _programGraph.Nodes) loops[node] = new HashSet<Node>();
+
+            var isForward = _direction == Direction.Forward;
+
+            foreach (var edge in _programGraph.Nodes.SelectMany(n => isForward ? n.OutGoingEdges : n.InGoingEdges))
+                if (isForward && _reversePostOrder[edge.ToNode] <= _reversePostOrder[edge.FromNode])
+                {
+                    var nodeToExtend = edge.ToNode;
+
+                    var containsEntry = loops.TryGetValue(nodeToExtend, out _);
+                    if (!containsEntry)
+                        //Happens when iterating through members of the final loops
+                        continue;
+
+                    loops[nodeToExtend].Add(nodeToExtend);
+                    Build(edge.FromNode, nodeToExtend, loops);
+                }
+                else if (!isForward && _reversePostOrder[edge.FromNode] <= _reversePostOrder[edge.ToNode])
+                {
+                    var nodeToExtend = edge.FromNode;
+
+                    var containsEntry = loops.TryGetValue(nodeToExtend, out _);
+                    if (!containsEntry)
+                        //Happens when iterating through members of the final loops
+                        continue;
+
+                    loops[nodeToExtend].Add(nodeToExtend);
+                    Build(edge.ToNode, nodeToExtend, loops);
+                }
+
+            return loops;
         }
 
         private (HashSet<Edge> depthFirstSpanningTree, Dictionary<Node, int> reversePostOrdering)
@@ -131,16 +170,16 @@ namespace Analyses.Algorithms.ReversePostorder
                 var noAncestorsInP = naturalLoops.Where(n => !HasAncestorInP(n.Key))
                     .Select(kvp => kvp.Key).ToList(); //S in literature
 
-                var loopGraph = GenerateGraphOfLoops(naturalLoops);
+                
                 var noGraphLoopAncestorsInP = naturalLoops.Where(n =>
                 {
-                    var loopGraphsWithNoP = loopGraph.Where(l => !l.Ancestors.Any() || l.Ancestors.All(AncestorNotInP));
+                    var loopGraphsWithNoP = _loopGraph.Where(l => !l.Ancestors.Any() || l.Ancestors.All(AncestorNotInP));
                     return loopGraphsWithNoP.Any(l => l.Component.Contains(n.Key));
                 }).Select(n => n.Key).ToList();
 
-                var remainingNodes = _nodesToReconsider.Except(noAncestorsInP).ToList(); // P' in literature
+                var remainingNodes = _nodesToReconsider.Except(noGraphLoopAncestorsInP).ToList(); // P' in literature
 
-                var nodesInReversePostOrder = ReversePostOrder(noAncestorsInP);
+                var nodesInReversePostOrder = ReversePostOrder(noGraphLoopAncestorsInP);
                 var nodeToReturn = nodesInReversePostOrder.First();
                 nodesInReversePostOrder.RemoveAt(0);
 
@@ -215,10 +254,7 @@ namespace Analyses.Algorithms.ReversePostorder
                         current = sortedList[index];
                     }
 
-                    if (index == sortedList.Count - 2)
-                        sortedList.Add(key);
-                    else
-                        sortedList.Insert(index, key);
+                    sortedList.Insert(index, key);
                 }
             }
 
@@ -228,7 +264,7 @@ namespace Analyses.Algorithms.ReversePostorder
         private ISet<NaturalComponent> GenerateGraphOfLoops(Dictionary<Node, HashSet<Node>> naturalLoops)
         {
             var naturalComponents = new HashSet<NaturalComponent>();
-            foreach (var node in _nodesToReconsider)
+            foreach (var node in _programGraph.Nodes)
             {
                 var naturalComponentForNode = new NaturalComponent(node, naturalLoops, _reversePostOrder);
                 if (!naturalComponents.Any(n => n.Equals(naturalComponentForNode)))

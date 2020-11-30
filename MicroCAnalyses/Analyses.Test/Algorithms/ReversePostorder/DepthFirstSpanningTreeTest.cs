@@ -20,7 +20,7 @@ namespace Analyses.Test.Algorithms.ReversePostorder
             
             analysis.Analyse();
 
-            Assert.Equal(14, analysis._worklistAlgorithm.BasicActionsNeeded);
+            Assert.Equal(12, analysis._worklistAlgorithm.BasicActionsNeeded);
         }
 
         
