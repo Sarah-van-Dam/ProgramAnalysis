@@ -175,9 +175,9 @@ namespace Analyses
                 case "3":
                     chosenAlgorithm = WorklistImplementation.Fifo;
                     break;
-                /*case "4":
-                    chosenAlgorithm = WorklistImplementation.DepthFirstPostOrder;
-                    break;*/
+                case "4":
+                    chosenAlgorithm = WorklistImplementation.NaturalLoops;
+                    break;
                 default:
                     Console.WriteLine("The number didn't match one of the algorithms.");
                     throw new Exception();
