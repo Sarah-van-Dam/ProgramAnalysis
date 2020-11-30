@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Analyses.Algorithms;
 using Analyses.Analysis.Actions;
 using Analyses.Graph;

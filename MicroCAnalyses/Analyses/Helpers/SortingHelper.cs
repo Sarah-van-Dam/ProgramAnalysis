@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Analyses.Graph;
 
 namespace Analyses.Helpers
@@ -22,6 +23,23 @@ namespace Analyses.Helpers
                 nodes.Reverse();
             }
         }
-        
+
+        public static void OrderEdgesByDirection(List<Edge> edges, bool isForward)
+        {
+            edges.Sort((first, second) =>
+            {
+                if (second.ToNode.Name == ProgramGraph.EndNode)
+                {
+                    return int.MaxValue;
+                }
+
+                return first.ToNode.Index - second.ToNode.Index;
+            });
+
+            if (!isForward)
+            {
+                edges.Reverse();
+            }
+        }
     }
 }
