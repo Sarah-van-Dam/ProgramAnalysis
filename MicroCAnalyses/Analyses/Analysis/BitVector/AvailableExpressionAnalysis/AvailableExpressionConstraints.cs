@@ -106,9 +106,13 @@ namespace Analyses.Analysis.BitVector.AvailableExpressionAnalysis
                 sb.Append(AstExtensions.AstToString(availableExpression));
                 sb.Append($", ");
             }
-
+            
             var availableArithmetic = sb.ToString();
-            availableArithmetic = availableArithmetic.Substring(availableArithmetic.Length - 2);
+            if (availableArithmetic.EndsWith(", "))
+            {
+                availableArithmetic = availableArithmetic.Substring(0, availableArithmetic.Length - 2);
+            }
+            
             availableArithmetic += "}";
             
             var sb2 = new StringBuilder();
@@ -120,7 +124,10 @@ namespace Analyses.Analysis.BitVector.AvailableExpressionAnalysis
             }
 
             var availableBoolean = sb2.ToString();
-            availableBoolean = availableBoolean.Substring(availableBoolean.Length - 2);
+            if (availableBoolean.EndsWith(", "))
+            {
+                availableBoolean = availableBoolean.Substring(0, availableBoolean.Length - 2);
+            }
             availableBoolean += "}";
 
             return $"({availableArithmetic}, {availableBoolean})";
