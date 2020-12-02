@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Analyses.Analysis.BitVector.LiveVariablesAnalysis;
 
-namespace Analyses.Analysis.Distributive
+namespace Analyses.Analysis.Monotone
 {
     public class FaintVariableConstraint : IConstraints
     {

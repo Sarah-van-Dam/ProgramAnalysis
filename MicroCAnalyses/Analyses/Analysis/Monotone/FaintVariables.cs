@@ -5,9 +5,9 @@ using Analyses.Algorithms;
 using Analyses.Analysis.Actions;
 using Analyses.Graph;
 
-namespace Analyses.Analysis.Distributive
+namespace Analyses.Analysis.Monotone
 {
-    public class FaintVariables : DistributiveFramework
+    public class FaintVariables : MonotoneFramework
     {
         private readonly FreeVariablesAnalysis _freeVariablesAnalysis;
         

@@ -1,16 +1,12 @@
 ﻿using Analyses.Analysis.Actions;
-using Analyses.Analysis.BitVector;
-using Analyses.Analysis.Distributive;
 using Analyses.Graph;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Analyses.Algorithms;
 
 namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 {
-    public class DetectionOfSigns : DistributiveFramework
+    public class DetectionOfSigns : MonotoneFramework
     {
         public DetectionOfSigns(ProgramGraph graph,
             WorklistImplementation worklistImplementation = WorklistImplementation.SortedIteration) : base(graph,

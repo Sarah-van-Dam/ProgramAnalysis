@@ -2,16 +2,15 @@ using System;
 using System.Collections.Generic;
 using Analyses.Algorithms;
 using Analyses.Graph;
-using Analyses.Helpers;
 
-namespace Analyses.Analysis.Distributive
+namespace Analyses.Analysis.Monotone
 {
-    public abstract class DistributiveFramework : Analysis
+    public abstract class MonotoneFramework : Analysis
     {
         protected Operator JoinOperator;
         public readonly Dictionary<Node, IConstraints> FinalConstraintsForNodes;
 
-        protected DistributiveFramework(ProgramGraph programGraph, Direction direction, WorklistImplementation worklistImplementation) : base(programGraph, direction, worklistImplementation)
+        protected MonotoneFramework(ProgramGraph programGraph, Direction direction, WorklistImplementation worklistImplementation) : base(programGraph, direction, worklistImplementation)
         {
             FinalConstraintsForNodes = new Dictionary<Node, IConstraints>();
         }

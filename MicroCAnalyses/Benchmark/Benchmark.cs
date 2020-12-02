@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Linq;
-using Analyses.Analysis.Distributive;
+using Analyses.Analysis.Monotone;
 using Analyses.Analysis.Monotone.DetectionOfSignsAnalysis;
 using Analyses.Analysis.BitVector.LiveVariablesAnalysis;
 using Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis;

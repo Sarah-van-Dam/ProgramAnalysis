@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Analyses.Analysis.Distributive
+namespace Analyses.Analysis.Monotone
 {
     public class DangerousVariablesConstraint : IConstraints
     {
@@ -62,7 +62,7 @@ namespace Analyses.Analysis.Distributive
 
         public override int GetHashCode()
         {
-            return DangerousVariables.GetHashCode(); //Only used in a non readonly fashion in tests
+            return DangerousVariables.GetHashCode(); //Only used in a readonly fashion in tests
         }
         
         public override string ToString()

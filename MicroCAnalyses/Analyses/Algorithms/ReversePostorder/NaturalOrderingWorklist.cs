@@ -6,7 +6,6 @@ namespace Analyses.Algorithms.ReversePostorder
 {
     public class NaturalOrderingWorklist : WorklistAlgorithm
     {
-        private readonly HashSet<Edge> _depthFirstSpanningTree;
         private readonly Direction _direction;
         private readonly List<Node> _nodesNeedingVisit; //V in literature
         private readonly HashSet<Node> _nodesToReconsider; //P IN literature
@@ -20,9 +19,8 @@ namespace Analyses.Algorithms.ReversePostorder
             _nodesNeedingVisit = new List<Node>();
             _nodesToReconsider = new HashSet<Node>();
             _direction = direction;
-            (_depthFirstSpanningTree, _reversePostOrder) = ReversePostOrderWithATwist();
-            var naturalLoops = InitialNaturalLoop();
-            _loopGraph = GenerateGraphOfLoops(naturalLoops);
+             _reversePostOrder = ReversePostOrderWithATwist();
+            _loopGraph = GenerateGraphOfLoops(InitialNaturalLoop());
         }
 
         private Dictionary<Node, HashSet<Node>> InitialNaturalLoop()
@@ -32,7 +30,14 @@ namespace Analyses.Algorithms.ReversePostorder
 
             var isForward = _direction == Direction.Forward;
 
-            foreach (var edge in _programGraph.Nodes.SelectMany(n => isForward ? n.OutGoingEdges : n.InGoingEdges))
+            BuildLoops(isForward, _programGraph.Nodes, loops);
+
+            return loops;
+        }
+
+        private void BuildLoops(bool isForward, IEnumerable<Node> nodesToIterate, Dictionary<Node, HashSet<Node>> loops)
+        {
+            foreach (var edge in nodesToIterate.SelectMany(n => isForward ? n.OutGoingEdges : n.InGoingEdges))
                 if (isForward && _reversePostOrder[edge.ToNode] <= _reversePostOrder[edge.FromNode])
                 {
                     var nodeToExtend = edge.ToNode;
@@ -57,12 +62,9 @@ namespace Analyses.Algorithms.ReversePostorder
                     loops[nodeToExtend].Add(nodeToExtend);
                     Build(edge.ToNode, nodeToExtend, loops);
                 }
-
-            return loops;
         }
 
-        private (HashSet<Edge> depthFirstSpanningTree, Dictionary<Node, int> reversePostOrdering)
-            ReversePostOrderWithATwist()
+        private Dictionary<Node, int> ReversePostOrderWithATwist()
         {
             var depthFirstSpanningTree = new HashSet<Edge>();
             var reversePostOrdering = new Dictionary<Node, int>();
@@ -74,7 +76,7 @@ namespace Analyses.Algorithms.ReversePostorder
                 _programGraph.Nodes.Single(n =>
                     n.Name == (_direction == Direction.Forward ? ProgramGraph.StartNode : ProgramGraph.EndNode)),
                 depthFirstSpanningTree, reversePostOrdering);
-            return (depthFirstSpanningTree, reversePostOrdering);
+            return reversePostOrdering;
         }
 
         private void Dfs(ISet<Node> visited, IDictionary<Node, int> up, IDictionary<Node, (int rp, int up)> ip,
@@ -107,32 +109,7 @@ namespace Analyses.Algorithms.ReversePostorder
 
             var isForward = _direction == Direction.Forward;
 
-            foreach (var edge in _nodesToReconsider.SelectMany(n => isForward ? n.OutGoingEdges : n.InGoingEdges))
-                if (isForward && _reversePostOrder[edge.ToNode] <= _reversePostOrder[edge.FromNode])
-                {
-                    var nodeToExtend = edge.ToNode;
-
-                    var containsEntry = loops.TryGetValue(nodeToExtend, out _);
-                    if (!containsEntry)
-                        //Happens when iterating through members of the final loops
-                        continue;
-
-                    loops[nodeToExtend].Add(nodeToExtend);
-                    Build(edge.FromNode, nodeToExtend, loops);
-                }
-                else if (!isForward && _reversePostOrder[edge.FromNode] <= _reversePostOrder[edge.ToNode])
-                {
-                    var nodeToExtend = edge.FromNode;
-
-                    var containsEntry = loops.TryGetValue(nodeToExtend, out _);
-                    if (!containsEntry)
-                        //Happens when iterating through members of the final loops
-                        continue;
-
-                    loops[nodeToExtend].Add(nodeToExtend);
-                    Build(edge.ToNode, nodeToExtend, loops);
-                }
-
+            BuildLoops(isForward, _nodesToReconsider, loops);
             return loops;
         }
 

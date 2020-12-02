@@ -1,4 +1,4 @@
-﻿namespace Analyses
+﻿namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 {
     public enum Sign
     {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Analyses.Analysis.BitVector.LiveVariablesAnalysis;
-using Analyses.Analysis.Distributive;
+using Analyses.Analysis.Monotone;
 using Analyses.Graph;
 using Xunit;
 
