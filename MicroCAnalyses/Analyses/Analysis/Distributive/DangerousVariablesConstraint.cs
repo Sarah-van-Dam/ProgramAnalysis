@@ -64,5 +64,12 @@ namespace Analyses.Analysis.Distributive
         {
             return DangerousVariables.GetHashCode(); //Only used in a non readonly fashion in tests
         }
+        
+        public override string ToString()
+        {
+            var dangerousVariablesAsString = string.Join(", ", DangerousVariables);
+
+            return $"{{ {dangerousVariablesAsString} }}";
+        }
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using Analyses.Helpers;
 
 namespace Analyses.Analysis.BitVector.AvailableExpressionAnalysis
 {
@@ -92,6 +94,43 @@ namespace Analyses.Analysis.BitVector.AvailableExpressionAnalysis
         public override int GetHashCode()
         {
             return HashCode.Combine(AvailableArithmeticExpressions.GetHashCode(), AvailableBooleanExpressions.GetHashCode()); //Only used in a non readonly fashion in tests
+        }
+        
+        public override string ToString()
+        {
+
+            var sb = new StringBuilder();
+            sb.Append("{ ");
+            foreach (var availableExpression in AvailableArithmeticExpressions)
+            {
+                sb.Append(AstExtensions.AstToString(availableExpression));
+                sb.Append($", ");
+            }
+            
+            var availableArithmetic = sb.ToString();
+            if (availableArithmetic.EndsWith(", "))
+            {
+                availableArithmetic = availableArithmetic.Substring(0, availableArithmetic.Length - 2);
+            }
+            
+            availableArithmetic += "}";
+            
+            var sb2 = new StringBuilder();
+            sb2.Append("{ ");
+            foreach (var availableExpression in AvailableBooleanExpressions)
+            {
+                sb2.Append(AstExtensions.AstToString(availableExpression));
+                sb2.Append($", ");
+            }
+
+            var availableBoolean = sb2.ToString();
+            if (availableBoolean.EndsWith(", "))
+            {
+                availableBoolean = availableBoolean.Substring(0, availableBoolean.Length - 2);
+            }
+            availableBoolean += "}";
+
+            return $"({availableArithmetic}, {availableBoolean})";
         }
     }
 }

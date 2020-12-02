@@ -12,9 +12,11 @@ namespace Analyses
         bool IsSubset(IConstraints other);
         bool IsSuperSet(IConstraints other);
 
-        public IConstraints Clone();
+        IConstraints Clone();
 
-        public void Join(IConstraints other);
-        
+        void Join(IConstraints other);
+
+        string ToString();
+
     }
 }

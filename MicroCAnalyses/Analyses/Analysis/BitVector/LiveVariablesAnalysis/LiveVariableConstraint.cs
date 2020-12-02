@@ -63,5 +63,12 @@ namespace Analyses.Analysis.BitVector.LiveVariablesAnalysis
             return LiveVariables.GetHashCode(); //Only used in a non readonly fashion in tests
         }
         
+        public override string ToString()
+        {
+            var liveVariablesAsString = string.Join(", ", LiveVariables);
+
+            return $"{{ {liveVariablesAsString} }}";
+        }
+        
     }
 }

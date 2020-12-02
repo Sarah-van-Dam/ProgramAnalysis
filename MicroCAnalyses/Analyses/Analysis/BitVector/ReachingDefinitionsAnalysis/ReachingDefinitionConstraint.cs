@@ -92,5 +92,13 @@ namespace Analyses.Analysis.BitVector.ReachingDefinitionsAnalysis
         {
             return VariableToPossibleAssignments.GetHashCode(); //Only used in a non readonly fashion in tests
         }
+        
+        public override string ToString()
+        {
+            return 
+                string.Join(", ", 
+                    VariableToPossibleAssignments
+                        .Select(entry => $"({entry.Key}, {{{string.Join(", ", entry.Value)}}})"));
+        }
     }
 }
