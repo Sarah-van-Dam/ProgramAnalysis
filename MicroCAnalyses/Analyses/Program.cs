@@ -5,7 +5,7 @@ using System.IO;
 using Analyses.Algorithms;
 using Analyses.Analysis;
 using Analyses.Analysis.BitVector.LiveVariablesAnalysis;
-using Analyses.Analysis.Distributive;
+using Analyses.Analysis.Monotone;
 using Analyses.Analysis.Monotone.DetectionOfSignsAnalysis;
 using Analyses.Analysis.BitVector.AvailableExpressionAnalysis;
 

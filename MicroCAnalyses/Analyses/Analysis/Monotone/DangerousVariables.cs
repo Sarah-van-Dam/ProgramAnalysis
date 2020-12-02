@@ -5,11 +5,10 @@ using Analyses.Graph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace Analyses.Analysis.Distributive
+namespace Analyses.Analysis.Monotone
 {
-    public class DangerousVariables : DistributiveFramework
+    public class DangerousVariables : MonotoneFramework
     {
         private readonly FreeVariablesAnalysis _freeVariablesAnalysis;
 
