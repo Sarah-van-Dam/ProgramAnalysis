@@ -130,7 +130,7 @@ namespace Analyses
             };
 
             analysis.Analyse();
-            //analysis.PrintResult();
+            analysis.PrintResult();
         }
 
         private static WorklistImplementation SetAlgorithm()
@@ -139,7 +139,7 @@ namespace Analyses
             Console.WriteLine("1. Sorted iteration algorithm");
             Console.WriteLine("2. Worklist algorithm using a stack");
             Console.WriteLine("3. Worklist algorithm using a queue");
-            Console.WriteLine("4. Worklist algorithm using a depth first tree and postorder");
+            Console.WriteLine("4. Worklist algorithm using a depth first spanning tree, reverse post-order, and natural loops");
             var algorithmName = Console.ReadLine();
 
             var chosenAlgorithm = ChooseAlgorithm(algorithmName);
@@ -175,9 +175,9 @@ namespace Analyses
                 case "3":
                     chosenAlgorithm = WorklistImplementation.Fifo;
                     break;
-                /*case "4":
-                    chosenAlgorithm = WorklistImplementation.DepthFirstPostOrder;
-                    break;*/
+                case "4":
+                    chosenAlgorithm = WorklistImplementation.NaturalLoops;
+                    break;
                 default:
                     Console.WriteLine("The number didn't match one of the algorithms.");
                     throw new Exception();

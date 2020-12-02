@@ -133,7 +133,10 @@ namespace Analyses.Algorithms.ReversePostorder
 
         public override void Insert(Node q)
         {
-            if (!_nodesNeedingVisit.Contains(q)) _nodesToReconsider.Add(q);
+            if (!_nodesNeedingVisit.Contains(q))
+            {
+                _nodesToReconsider.Add(q);
+            }
         }
 
         public override Node Extract()

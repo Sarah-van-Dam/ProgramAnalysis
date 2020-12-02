@@ -17,7 +17,7 @@ namespace Analyses.Analysis.Monotone.DetectionOfSignsAnalysis
 		}
 
 		public override string ToString()
-			=> "Detection of Signs constraint\n" + string.Join("\n", VariableSigns.Select(entry => $"({entry.Key}, {{{string.Join(", ", entry.Value.signs)}}})"));
+			=> string.Join(", ", VariableSigns.Select(entry => $"({entry.Key}, {{{string.Join(", ", entry.Value.signs)}}})"));
 
 		public IConstraints Clone()
 		{

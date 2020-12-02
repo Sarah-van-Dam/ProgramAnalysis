@@ -1,3 +1,5 @@
+using Analyses.Helpers;
+
 namespace Analyses.Analysis.Actions
 {
     public class Write : Action
@@ -5,7 +7,7 @@ namespace Analyses.Analysis.Actions
         public MicroCTypes.arithmeticExpression Expression { get; set; }
 
         public override string ToSyntax()
-            => $"write {Expression};";
+            => $"write {AstExtensions.AstToString(Expression)};";
 
         public override string ToString()
         {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Analyses.Algorithms;
 using Analyses.Graph;
@@ -44,7 +45,11 @@ namespace Analyses.Analysis.Monotone
         
         public override void PrintResult()
         {
-            throw new System.NotImplementedException();
+            Console.WriteLine($"Analysis completed in {_worklistAlgorithm.BasicActionsNeeded} steps");
+            foreach (var (node, constraints) in FinalConstraintsForNodes)
+            {
+                Console.WriteLine($"{node}: {constraints}");
+            }
         }
 
         private bool UpdateConstraints(Edge edge, in bool isForward)
